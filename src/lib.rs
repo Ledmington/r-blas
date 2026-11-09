@@ -1,14 +1,61 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+#![forbid(unsafe_code)]
+
+fn asum() {
+    todo!()
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+fn axpy() {
+    todo!()
+}
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+fn copy() {
+    todo!()
+}
+
+fn dot() {
+    todo!()
+}
+
+fn dotc() {
+    todo!()
+}
+
+fn dotu() {
+    todo!()
+}
+
+fn nrm2() {
+    todo!()
+}
+
+fn rot() {
+    todo!()
+}
+
+fn rotg() {
+    todo!()
+}
+
+fn rotm() {
+    todo!()
+}
+
+fn rotmg() {
+    todo!()
+}
+
+fn scal() {
+    todo!()
+}
+
+fn swap() {
+    todo!()
+}
+
+fn iamax() {
+    todo!()
+}
+
+fn iamin() {
+    todo!()
 }
