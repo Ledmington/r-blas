@@ -48,6 +48,20 @@ fn daxpy(a: f64, x: &[f64], y: &mut [f64]) {
     }
 }
 
+fn caxpy(a: Complex<f32>, x: &[Complex<f32>], y: &mut [Complex<f32>]) {
+    assert!(x.len() == y.len());
+    for i in 0..x.len() {
+        y[i] += a * x[i];
+    }
+}
+
+fn zaxpy(a: Complex<f64>, x: &[Complex<f64>], y: &mut [Complex<f64>]) {
+    assert!(x.len() == y.len());
+    for i in 0..x.len() {
+        y[i] += a * x[i];
+    }
+}
+
 fn scopy(x: &[f32], y: &mut [f32]) {
     assert!(x.len() == y.len());
     y[..x.len()].copy_from_slice(x);
@@ -185,6 +199,102 @@ mod tests {
         daxpy(2.0, &x, &mut y);
         assert_eq!(y, vec![12.0, 16.0, -23.0, 5.0]);
         assert_eq!(x, vec![1.0, -2.0, 3.5, 0.0]);
+    }
+
+    #[test]
+    fn test_caxpy() {
+        let a = Complex::new(2.0f32, 1.0);
+        let x: Vec<Complex<f32>> = vec![
+            Complex::new(1.0, 2.0),
+            Complex::new(-1.0, 0.0),
+            Complex::new(0.0, 1.0),
+        ];
+        let mut y: Vec<Complex<f32>> = vec![
+            Complex::new(1.0, 1.0),
+            Complex::new(2.0, -3.0),
+            Complex::new(0.0, 0.0),
+        ];
+        caxpy(a, &x, &mut y);
+        assert_eq!(
+            y,
+            vec![
+                Complex::new(1.0, 6.0),
+                Complex::new(0.0, -4.0),
+                Complex::new(-1.0, 2.0),
+            ]
+        );
+        assert_eq!(
+            x,
+            vec![
+                Complex::new(1.0, 2.0),
+                Complex::new(-1.0, 0.0),
+                Complex::new(0.0, 1.0),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_caxpy_zero_alpha() {
+        let x: Vec<Complex<f32>> = vec![Complex::new(1.0, 2.0), Complex::new(-3.0, 4.0)];
+        let mut y: Vec<Complex<f32>> = vec![Complex::new(5.0, -6.0), Complex::new(7.0, 8.0)];
+        caxpy(Complex::new(0.0, 0.0), &x, &mut y);
+        assert_eq!(y, vec![Complex::new(5.0, -6.0), Complex::new(7.0, 8.0)]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_caxpy_length_mismatch() {
+        let x: Vec<Complex<f32>> = vec![Complex::new(1.0, 0.0); 3];
+        let mut y: Vec<Complex<f32>> = vec![Complex::new(0.0, 0.0); 2];
+        caxpy(Complex::new(1.0, 0.0), &x, &mut y);
+    }
+
+    #[test]
+    fn test_zaxpy() {
+        let a = Complex::new(2.0f64, 1.0);
+        let x: Vec<Complex<f64>> = vec![
+            Complex::new(1.0, 2.0),
+            Complex::new(-1.0, 0.0),
+            Complex::new(0.0, 1.0),
+        ];
+        let mut y: Vec<Complex<f64>> = vec![
+            Complex::new(1.0, 1.0),
+            Complex::new(2.0, -3.0),
+            Complex::new(0.0, 0.0),
+        ];
+        zaxpy(a, &x, &mut y);
+        assert_eq!(
+            y,
+            vec![
+                Complex::new(1.0, 6.0),
+                Complex::new(0.0, -4.0),
+                Complex::new(-1.0, 2.0),
+            ]
+        );
+        assert_eq!(
+            x,
+            vec![
+                Complex::new(1.0, 2.0),
+                Complex::new(-1.0, 0.0),
+                Complex::new(0.0, 1.0),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_zaxpy_zero_alpha() {
+        let x: Vec<Complex<f64>> = vec![Complex::new(1.0, 2.0), Complex::new(-3.0, 4.0)];
+        let mut y: Vec<Complex<f64>> = vec![Complex::new(5.0, -6.0), Complex::new(7.0, 8.0)];
+        zaxpy(Complex::new(0.0, 0.0), &x, &mut y);
+        assert_eq!(y, vec![Complex::new(5.0, -6.0), Complex::new(7.0, 8.0)]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_zaxpy_length_mismatch() {
+        let x: Vec<Complex<f64>> = vec![Complex::new(1.0, 0.0); 3];
+        let mut y: Vec<Complex<f64>> = vec![Complex::new(0.0, 0.0); 2];
+        zaxpy(Complex::new(1.0, 0.0), &x, &mut y);
     }
 
     #[test]
