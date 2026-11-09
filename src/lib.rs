@@ -100,12 +100,40 @@ fn ddot(x: &[f64], y: &[f64]) -> f64 {
     s
 }
 
-fn dotc() {
-    todo!()
+fn cdotu(x: &[Complex<f32>], y: &[Complex<f32>]) -> Complex<f32> {
+    assert!(x.len() == y.len());
+    let mut s = Complex::default();
+    for i in 0..x.len() {
+        s += x[i] * y[i];
+    }
+    s
 }
 
-fn dotu() {
-    todo!()
+fn zdotu(x: &[Complex<f64>], y: &[Complex<f64>]) -> Complex<f64> {
+    assert!(x.len() == y.len());
+    let mut s = Complex::default();
+    for i in 0..x.len() {
+        s += x[i] * y[i];
+    }
+    s
+}
+
+fn cdotc(x: &[Complex<f32>], y: &[Complex<f32>]) -> Complex<f32> {
+    assert!(x.len() == y.len());
+    let mut s = Complex::default();
+    for i in 0..x.len() {
+        s += x[i].conj() * y[i];
+    }
+    s
+}
+
+fn zdotc(x: &[Complex<f64>], y: &[Complex<f64>]) -> Complex<f64> {
+    assert!(x.len() == y.len());
+    let mut s = Complex::default();
+    for i in 0..x.len() {
+        s += x[i].conj() * y[i];
+    }
+    s
 }
 
 fn nrm2() {
@@ -489,5 +517,107 @@ mod tests {
         let x: Vec<f64> = vec![1.0, 2.0, 3.0];
         let y: Vec<f64> = vec![1.0, 2.0];
         ddot(&x, &y);
+    }
+
+    #[test]
+    fn test_cdotu() {
+        let x: Vec<Complex<f32>> = vec![Complex::new(1.0, 2.0), Complex::new(3.0, -1.0)];
+        let y: Vec<Complex<f32>> = vec![Complex::new(2.0, -1.0), Complex::new(-1.0, 4.0)];
+        assert_eq!(cdotu(&x, &y), Complex::new(5.0, 16.0));
+    }
+
+    #[test]
+    fn test_cdotu_empty() {
+        let x: Vec<Complex<f32>> = vec![];
+        let y: Vec<Complex<f32>> = vec![];
+        assert_eq!(cdotu(&x, &y), Complex::new(0.0, 0.0));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_cdotu_length_mismatch() {
+        let x: Vec<Complex<f32>> = vec![Complex::new(1.0, 0.0); 3];
+        let y: Vec<Complex<f32>> = vec![Complex::new(1.0, 0.0); 2];
+        cdotu(&x, &y);
+    }
+
+    #[test]
+    fn test_cdotc() {
+        let x: Vec<Complex<f32>> = vec![Complex::new(1.0, 2.0), Complex::new(3.0, -1.0)];
+        let y: Vec<Complex<f32>> = vec![Complex::new(2.0, -1.0), Complex::new(-1.0, 4.0)];
+        assert_eq!(cdotc(&x, &y), Complex::new(-7.0, 6.0));
+    }
+
+    // conj(x) . x is the squared Euclidean norm: always real.
+    #[test]
+    fn test_cdotc_self_is_squared_norm() {
+        let x: Vec<Complex<f32>> = vec![Complex::new(1.0, 2.0), Complex::new(3.0, -1.0)];
+        assert_eq!(cdotc(&x, &x), Complex::new(15.0, 0.0));
+    }
+
+    #[test]
+    fn test_cdotc_empty() {
+        let x: Vec<Complex<f32>> = vec![];
+        let y: Vec<Complex<f32>> = vec![];
+        assert_eq!(cdotc(&x, &y), Complex::new(0.0, 0.0));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_cdotc_length_mismatch() {
+        let x: Vec<Complex<f32>> = vec![Complex::new(1.0, 0.0); 3];
+        let y: Vec<Complex<f32>> = vec![Complex::new(1.0, 0.0); 2];
+        cdotc(&x, &y);
+    }
+
+    #[test]
+    fn test_zdotu() {
+        let x: Vec<Complex<f64>> = vec![Complex::new(1.0, 2.0), Complex::new(3.0, -1.0)];
+        let y: Vec<Complex<f64>> = vec![Complex::new(2.0, -1.0), Complex::new(-1.0, 4.0)];
+        assert_eq!(zdotu(&x, &y), Complex::new(5.0, 16.0));
+    }
+
+    #[test]
+    fn test_zdotu_empty() {
+        let x: Vec<Complex<f64>> = vec![];
+        let y: Vec<Complex<f64>> = vec![];
+        assert_eq!(zdotu(&x, &y), Complex::new(0.0, 0.0));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_zdotu_length_mismatch() {
+        let x: Vec<Complex<f64>> = vec![Complex::new(1.0, 0.0); 3];
+        let y: Vec<Complex<f64>> = vec![Complex::new(1.0, 0.0); 2];
+        zdotu(&x, &y);
+    }
+
+    #[test]
+    fn test_zdotc() {
+        let x: Vec<Complex<f64>> = vec![Complex::new(1.0, 2.0), Complex::new(3.0, -1.0)];
+        let y: Vec<Complex<f64>> = vec![Complex::new(2.0, -1.0), Complex::new(-1.0, 4.0)];
+        assert_eq!(zdotc(&x, &y), Complex::new(-7.0, 6.0));
+    }
+
+    // conj(x) . x is the squared Euclidean norm: always real.
+    #[test]
+    fn test_zdotc_self_is_squared_norm() {
+        let x: Vec<Complex<f64>> = vec![Complex::new(1.0, 2.0), Complex::new(3.0, -1.0)];
+        assert_eq!(zdotc(&x, &x), Complex::new(15.0, 0.0));
+    }
+
+    #[test]
+    fn test_zdotc_empty() {
+        let x: Vec<Complex<f64>> = vec![];
+        let y: Vec<Complex<f64>> = vec![];
+        assert_eq!(zdotc(&x, &y), Complex::new(0.0, 0.0));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_zdotc_length_mismatch() {
+        let x: Vec<Complex<f64>> = vec![Complex::new(1.0, 0.0); 3];
+        let y: Vec<Complex<f64>> = vec![Complex::new(1.0, 0.0); 2];
+        zdotc(&x, &y);
     }
 }
