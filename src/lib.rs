@@ -1,29 +1,29 @@
 #![forbid(unsafe_code)]
 
-fn sasum(x: &Vec<f32>) -> f32 {
+fn sasum(x: &[f32]) -> f32 {
     let mut s = 0.0f32;
-    for i in 0..x.len() {
-        s += x[i].abs();
+    for xi in x {
+        s += xi.abs();
     }
     s
 }
 
-fn dasum(x: &Vec<f64>) -> f64 {
+fn dasum(x: &[f64]) -> f64 {
     let mut s = 0.0f64;
-    for i in 0..x.len() {
-        s += x[i].abs();
+    for xi in x {
+        s += xi.abs();
     }
     s
 }
 
-fn saxpy(a: f32, x: &Vec<f32>, y: &mut Vec<f32>) {
+fn saxpy(a: f32, x: &[f32], y: &mut [f32]) {
     assert!(x.len() == y.len());
     for i in 0..x.len() {
         y[i] += a * x[i];
     }
 }
 
-fn daxpy(a: f64, x: &Vec<f64>, y: &mut Vec<f64>) {
+fn daxpy(a: f64, x: &[f64], y: &mut [f64]) {
     assert!(x.len() == y.len());
     for i in 0..x.len() {
         y[i] += a * x[i];
