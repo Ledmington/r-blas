@@ -72,6 +72,16 @@ fn dcopy(x: &[f64], y: &mut [f64]) {
     y[..x.len()].copy_from_slice(x);
 }
 
+fn ccopy(x: &[Complex<f32>], y: &mut [Complex<f32>]) {
+    assert!(x.len() == y.len());
+    y[..x.len()].copy_from_slice(x);
+}
+
+fn zcopy(x: &[Complex<f64>], y: &mut [Complex<f64>]) {
+    assert!(x.len() == y.len());
+    y[..x.len()].copy_from_slice(x);
+}
+
 fn sdot(x: &[f32], y: &[f32]) -> f32 {
     assert!(x.len() == y.len());
     let mut s = 0.0f32;
@@ -345,6 +355,78 @@ mod tests {
         let x: Vec<f64> = vec![1.0, 2.0, 3.0];
         let mut y: Vec<f64> = vec![0.0, 0.0];
         dcopy(&x, &mut y);
+    }
+
+    #[test]
+    fn test_ccopy() {
+        let x: Vec<Complex<f32>> = vec![
+            Complex::new(1.0, -2.0),
+            Complex::new(-3.5, 0.0),
+            Complex::new(0.0, 4.5),
+        ];
+        let mut y: Vec<Complex<f32>> = vec![Complex::new(9.0, 9.0); 3];
+        ccopy(&x, &mut y);
+        assert_eq!(y, x);
+        assert_eq!(
+            x,
+            vec![
+                Complex::new(1.0, -2.0),
+                Complex::new(-3.5, 0.0),
+                Complex::new(0.0, 4.5),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_ccopy_empty() {
+        let x: Vec<Complex<f32>> = vec![];
+        let mut y: Vec<Complex<f32>> = vec![];
+        ccopy(&x, &mut y);
+        assert!(y.is_empty());
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_ccopy_length_mismatch() {
+        let x: Vec<Complex<f32>> = vec![Complex::new(1.0, 1.0); 3];
+        let mut y: Vec<Complex<f32>> = vec![Complex::new(0.0, 0.0); 2];
+        ccopy(&x, &mut y);
+    }
+
+    #[test]
+    fn test_zcopy() {
+        let x: Vec<Complex<f64>> = vec![
+            Complex::new(1.0, -2.0),
+            Complex::new(-3.5, 0.0),
+            Complex::new(0.0, 4.5),
+        ];
+        let mut y: Vec<Complex<f64>> = vec![Complex::new(9.0, 9.0); 3];
+        zcopy(&x, &mut y);
+        assert_eq!(y, x);
+        assert_eq!(
+            x,
+            vec![
+                Complex::new(1.0, -2.0),
+                Complex::new(-3.5, 0.0),
+                Complex::new(0.0, 4.5),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_zcopy_empty() {
+        let x: Vec<Complex<f64>> = vec![];
+        let mut y: Vec<Complex<f64>> = vec![];
+        zcopy(&x, &mut y);
+        assert!(y.is_empty());
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_zcopy_length_mismatch() {
+        let x: Vec<Complex<f64>> = vec![Complex::new(1.0, 1.0); 3];
+        let mut y: Vec<Complex<f64>> = vec![Complex::new(0.0, 0.0); 2];
+        zcopy(&x, &mut y);
     }
 
     #[test]
