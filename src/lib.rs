@@ -18,16 +18,16 @@ fn dasum(x: &[f64]) -> f64 {
     s
 }
 
-fn scasum(x: &[Complex<f32>]) -> Complex<f32> {
-    let mut s = Complex::default();
+fn scasum(x: &[Complex<f32>]) -> f32 {
+    let mut s = 0.0f32;
     for xi in x {
         s += xi.re.abs() + xi.im.abs();
     }
     s
 }
 
-fn dzasum(x: &[Complex<f64>]) -> Complex<f64> {
-    let mut s = Complex::default();
+fn dzasum(x: &[Complex<f64>]) -> f64 {
+    let mut s = 0.0f64;
     for xi in x {
         s += xi.re.abs() + xi.im.abs();
     }
@@ -150,37 +150,37 @@ mod tests {
         assert_eq!(dasum(&x), 11.0);
     }
 
-    // BLAS defines ?casum as sum(|Re(x_i)| + |Im(x_i)|), not the sum of moduli.
+    // BLAS defines scasum/dzasum as sum(|Re(x_i)| + |Im(x_i)|), not the sum of moduli.
     #[test]
-    fn test_casum() {
+    fn test_scasum() {
         let x: Vec<Complex<f32>> = vec![
             Complex::new(3.0, 4.0),
             Complex::new(-1.0, -2.0),
             Complex::new(0.5, -0.5),
         ];
-        assert_eq!(scasum(&x), Complex::new(11.0, 0.0));
+        assert_eq!(scasum(&x), 11.0);
     }
 
     #[test]
-    fn test_casum_empty() {
+    fn test_scasum_empty() {
         let x: Vec<Complex<f32>> = vec![];
-        assert_eq!(scasum(&x), Complex::new(0.0, 0.0));
+        assert_eq!(scasum(&x), 0.0);
     }
 
     #[test]
-    fn test_zasum() {
+    fn test_dzasum() {
         let x: Vec<Complex<f64>> = vec![
             Complex::new(3.0, 4.0),
             Complex::new(-1.0, -2.0),
             Complex::new(0.5, -0.5),
         ];
-        assert_eq!(dzasum(&x), Complex::new(11.0, 0.0));
+        assert_eq!(dzasum(&x), 11.0);
     }
 
     #[test]
-    fn test_zasum_empty() {
+    fn test_dzasum_empty() {
         let x: Vec<Complex<f64>> = vec![];
-        assert_eq!(dzasum(&x), Complex::new(0.0, 0.0));
+        assert_eq!(dzasum(&x), 0.0);
     }
 
     #[test]
