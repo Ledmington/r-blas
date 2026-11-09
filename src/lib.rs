@@ -40,8 +40,22 @@ fn dcopy(x: &[f64], y: &mut [f64]) {
     y[..x.len()].copy_from_slice(x);
 }
 
-fn dot() {
-    todo!()
+fn sdot(x: &[f32], y: &[f32]) -> f32 {
+    assert!(x.len() == y.len());
+    let mut s = 0.0f32;
+    for i in 0..x.len() {
+        s += x[i] * y[i];
+    }
+    s
+}
+
+fn ddot(x: &[f64], y: &[f64]) -> f64 {
+    assert!(x.len() == y.len());
+    let mut s = 0.0f64;
+    for i in 0..x.len() {
+        s += x[i] * y[i];
+    }
+    s
 }
 
 fn dotc() {
@@ -170,5 +184,67 @@ mod tests {
         let x: Vec<f64> = vec![1.0, 2.0, 3.0];
         let mut y: Vec<f64> = vec![0.0, 0.0];
         dcopy(&x, &mut y);
+    }
+
+    #[test]
+    fn test_sdot() {
+        let x: Vec<f32> = vec![1.0, -2.0, 3.5, -4.5];
+        let y: Vec<f32> = vec![2.0, 0.5, -2.0, 1.0];
+        assert_eq!(sdot(&x, &y), -10.5);
+        assert_eq!(x, vec![1.0, -2.0, 3.5, -4.5]);
+        assert_eq!(y, vec![2.0, 0.5, -2.0, 1.0]);
+    }
+
+    #[test]
+    fn test_sdot_orthogonal() {
+        let x: Vec<f32> = vec![1.0, 0.0, 2.0];
+        let y: Vec<f32> = vec![0.0, 5.0, 0.0];
+        assert_eq!(sdot(&x, &y), 0.0);
+    }
+
+    #[test]
+    fn test_sdot_empty() {
+        let x: Vec<f32> = vec![];
+        let y: Vec<f32> = vec![];
+        assert_eq!(sdot(&x, &y), 0.0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_sdot_length_mismatch() {
+        let x: Vec<f32> = vec![1.0, 2.0, 3.0];
+        let y: Vec<f32> = vec![1.0, 2.0];
+        sdot(&x, &y);
+    }
+
+    #[test]
+    fn test_ddot() {
+        let x: Vec<f64> = vec![1.0, -2.0, 3.5, -4.5];
+        let y: Vec<f64> = vec![2.0, 0.5, -2.0, 1.0];
+        assert_eq!(ddot(&x, &y), -10.5);
+        assert_eq!(x, vec![1.0, -2.0, 3.5, -4.5]);
+        assert_eq!(y, vec![2.0, 0.5, -2.0, 1.0]);
+    }
+
+    #[test]
+    fn test_ddot_orthogonal() {
+        let x: Vec<f64> = vec![1.0, 0.0, 2.0];
+        let y: Vec<f64> = vec![0.0, 5.0, 0.0];
+        assert_eq!(ddot(&x, &y), 0.0);
+    }
+
+    #[test]
+    fn test_ddot_empty() {
+        let x: Vec<f64> = vec![];
+        let y: Vec<f64> = vec![];
+        assert_eq!(ddot(&x, &y), 0.0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_ddot_length_mismatch() {
+        let x: Vec<f64> = vec![1.0, 2.0, 3.0];
+        let y: Vec<f64> = vec![1.0, 2.0];
+        ddot(&x, &y);
     }
 }
