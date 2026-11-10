@@ -352,10 +352,103 @@ fn drotm(x: &mut [f64], y: &mut [f64], param: [f64; 5]) {
     }
 }
 
-fn rotmg() {
-    todo!()
+fn srotmg(d1: &mut f32, d2: &mut f32, x1: &mut f32, y1: &f32, param: &mut [f32; 5]) {
+    // NOTE: param is in column-major order, so it's [flag, h11, h21, h12, h22]
+    if *d1 >= 0.0f32 {
+        let p2 = *d2 * *y1;
+        if p2 == 0.0f32 {
+            // H is the identity
+            param[0] = -2.0f32;
+            return;
+        }
+        let p1 = *d1 * *x1;
+        let q1 = p1 * *x1;
+        let q2 = p2 * *y1;
+
+        if q1.abs() > q2.abs() {
+            // H = [1, h12; h21, 1]
+            let h21 = -*y1 / *x1;
+            let h12 = p2 / p1;
+            let u = 1.0f32 - h12 * h21;
+            *d1 /= u;
+            *d2 /= u;
+            *x1 *= u;
+            param[0] = 0.0f32;
+            param[2] = h21;
+            param[3] = h12;
+            return;
+        }
+        if q2 >= 0.0f32 {
+            // H = [h11, 1; -1, h22]
+            let h11 = p1 / p2;
+            let h22 = *x1 / *y1;
+            let u = 1.0f32 + h11 * h22;
+            let tmp = *d2 / u;
+            *d2 = *d1 / u;
+            *d1 = tmp;
+            *x1 = *y1 * u;
+            param[0] = 1.0f32;
+            param[1] = h11;
+            param[4] = h22;
+            return;
+        }
+    }
+
+    // d1 < 0 or q2 < 0: no valid rotation, H = 0
+    *param = [-1.0f32, 0.0f32, 0.0f32, 0.0f32, 0.0f32];
+    *d1 = 0.0f32;
+    *d2 = 0.0f32;
+    *x1 = 0.0f32;
 }
 
+fn drotmg(d1: &mut f64, d2: &mut f64, x1: &mut f64, y1: &f64, param: &mut [f64; 5]) {
+    // NOTE: param is in column-major order, so it's [flag, h11, h21, h12, h22]
+    if *d1 >= 0.0f64 {
+        let p2 = *d2 * *y1;
+        if p2 == 0.0f64 {
+            // H is the identity
+            param[0] = -2.0f64;
+            return;
+        }
+        let p1 = *d1 * *x1;
+        let q1 = p1 * *x1;
+        let q2 = p2 * *y1;
+
+        if q1.abs() > q2.abs() {
+            // H = [1, h12; h21, 1]
+            let h21 = -*y1 / *x1;
+            let h12 = p2 / p1;
+            let u = 1.0f64 - h12 * h21;
+            *d1 /= u;
+            *d2 /= u;
+            *x1 *= u;
+            param[0] = 0.0f64;
+            param[2] = h21;
+            param[3] = h12;
+            return;
+        }
+        if q2 >= 0.0f64 {
+            // H = [h11, 1; -1, h22]
+            let h11 = p1 / p2;
+            let h22 = *x1 / *y1;
+            let u = 1.0f64 + h11 * h22;
+            let tmp = *d2 / u;
+            *d2 = *d1 / u;
+            *d1 = tmp;
+            *x1 = *y1 * u;
+            param[0] = 1.0f64;
+            param[1] = h11;
+            param[4] = h22;
+            return;
+        }
+    }
+
+    // d1 < 0 or q2 < 0: no valid rotation, H = 0
+    *param = [-1.0f64, 0.0f64, 0.0f64, 0.0f64, 0.0f64];
+    *d1 = 0.0f64;
+    *d2 = 0.0f64;
+    *x1 = 0.0f64;
+}
 fn scal() {
     todo!()
 }
@@ -1507,5 +1600,172 @@ mod tests {
         let mut x: Vec<f64> = vec![1.0, 2.0, 3.0];
         let mut y: Vec<f64> = vec![1.0, 2.0];
         drotm(&mut x, &mut y, [-2.0, 0.0, 0.0, 0.0, 0.0]);
+    }
+
+    // BLAS rotmg: builds H so that H * [x1; y1] = [x1'; 0], with the weighted norm
+    // d1*x1^2 + d2*y1^2 preserved as d1'*x1'^2. Entries of param not used by the
+    // returned flag are left untouched (the tests start them at 9.0 to check this).
+    #[test]
+    fn test_srotmg_flag_zero() {
+        let (mut d1, mut d2, mut x1, y1): (f32, f32, f32, f32) = (1.0, 1.0, 2.0, 1.0);
+        let mut param: [f32; 5] = [9.0; 5];
+        srotmg(&mut d1, &mut d2, &mut x1, &y1, &mut param);
+        assert_eq!(param[0], 0.0);
+        assert_close_f32(&param[1..], &[9.0, -0.5, 0.5, 9.0]);
+        assert_close_f32(&[d1, d2, x1], &[0.8, 0.8, 2.5]);
+    }
+
+    #[test]
+    fn test_srotmg_flag_one() {
+        let (mut d1, mut d2, mut x1, y1): (f32, f32, f32, f32) = (1.0, 1.0, 1.0, 2.0);
+        let mut param: [f32; 5] = [9.0; 5];
+        srotmg(&mut d1, &mut d2, &mut x1, &y1, &mut param);
+        assert_eq!(param[0], 1.0);
+        assert_close_f32(&param[1..], &[0.5, 9.0, 9.0, 0.5]);
+        assert_close_f32(&[d1, d2, x1], &[0.8, 0.8, 2.5]);
+    }
+
+    #[test]
+    fn test_srotmg_y1_zero_is_identity() {
+        let (mut d1, mut d2, mut x1, y1): (f32, f32, f32, f32) = (2.0, 3.0, 1.0, 0.0);
+        let mut param: [f32; 5] = [9.0; 5];
+        srotmg(&mut d1, &mut d2, &mut x1, &y1, &mut param);
+        assert_eq!(param, [-2.0, 9.0, 9.0, 9.0, 9.0]);
+        assert_eq!((d1, d2, x1), (2.0, 3.0, 1.0));
+    }
+
+    #[test]
+    fn test_srotmg_negative_d1() {
+        let (mut d1, mut d2, mut x1, y1): (f32, f32, f32, f32) = (-1.0, 2.0, 3.0, 4.0);
+        let mut param: [f32; 5] = [9.0; 5];
+        srotmg(&mut d1, &mut d2, &mut x1, &y1, &mut param);
+        assert_eq!(param, [-1.0, 0.0, 0.0, 0.0, 0.0]);
+        assert_eq!((d1, d2, x1), (0.0, 0.0, 0.0));
+    }
+
+    #[test]
+    fn test_srotmg_negative_q2() {
+        // d2 < 0 and |d2*y1^2| >= |d1*x1^2|
+        let (mut d1, mut d2, mut x1, y1): (f32, f32, f32, f32) = (1.0, -1.0, 1.0, 2.0);
+        let mut param: [f32; 5] = [9.0; 5];
+        srotmg(&mut d1, &mut d2, &mut x1, &y1, &mut param);
+        assert_eq!(param, [-1.0, 0.0, 0.0, 0.0, 0.0]);
+        assert_eq!((d1, d2, x1), (0.0, 0.0, 0.0));
+    }
+
+    // Calls rotmg, then checks that rotm with the returned param zeroes y1,
+    // turns x1 into the returned x1, and preserves the weighted norm.
+    fn check_srotmg_with_srotm(d1: f32, d2: f32, x1: f32, y1: f32) -> f32 {
+        let (mut d1n, mut d2n, mut x1n) = (d1, d2, x1);
+        let mut param: [f32; 5] = [9.0; 5];
+        srotmg(&mut d1n, &mut d2n, &mut x1n, &y1, &mut param);
+        let mut x = vec![x1];
+        let mut y = vec![y1];
+        srotm(&mut x, &mut y, param);
+        let tol: f32 = 1e-5;
+        assert!(
+            (x[0] - x1n).abs() <= tol * x1n.abs(),
+            "x: {} != {}",
+            x[0],
+            x1n
+        );
+        assert!(y[0].abs() <= tol * x1n.abs(), "y not zeroed: {}", y[0]);
+        let before = d1 * x1 * x1 + d2 * y1 * y1;
+        let after = d1n * x1n * x1n;
+        assert!(
+            (before - after).abs() <= tol * before.abs(),
+            "norm: {before} != {after}"
+        );
+        param[0]
+    }
+
+    #[test]
+    fn test_srotmg_then_srotm() {
+        assert_eq!(check_srotmg_with_srotm(1.0, 1.0, 2.0, 1.0), 0.0);
+        assert_eq!(check_srotmg_with_srotm(1.0, 1.0, 1.0, 2.0), 1.0);
+        assert_eq!(check_srotmg_with_srotm(2.0, 0.5, -3.0, 1.5), 0.0);
+        assert_eq!(check_srotmg_with_srotm(0.5, 3.0, 1.0, -4.0), 1.0);
+    }
+
+    #[test]
+    fn test_drotmg_flag_zero() {
+        let (mut d1, mut d2, mut x1, y1): (f64, f64, f64, f64) = (1.0, 1.0, 2.0, 1.0);
+        let mut param: [f64; 5] = [9.0; 5];
+        drotmg(&mut d1, &mut d2, &mut x1, &y1, &mut param);
+        assert_eq!(param[0], 0.0);
+        assert_close_f64(&param[1..], &[9.0, -0.5, 0.5, 9.0]);
+        assert_close_f64(&[d1, d2, x1], &[0.8, 0.8, 2.5]);
+    }
+
+    #[test]
+    fn test_drotmg_flag_one() {
+        let (mut d1, mut d2, mut x1, y1): (f64, f64, f64, f64) = (1.0, 1.0, 1.0, 2.0);
+        let mut param: [f64; 5] = [9.0; 5];
+        drotmg(&mut d1, &mut d2, &mut x1, &y1, &mut param);
+        assert_eq!(param[0], 1.0);
+        assert_close_f64(&param[1..], &[0.5, 9.0, 9.0, 0.5]);
+        assert_close_f64(&[d1, d2, x1], &[0.8, 0.8, 2.5]);
+    }
+
+    #[test]
+    fn test_drotmg_y1_zero_is_identity() {
+        let (mut d1, mut d2, mut x1, y1): (f64, f64, f64, f64) = (2.0, 3.0, 1.0, 0.0);
+        let mut param: [f64; 5] = [9.0; 5];
+        drotmg(&mut d1, &mut d2, &mut x1, &y1, &mut param);
+        assert_eq!(param, [-2.0, 9.0, 9.0, 9.0, 9.0]);
+        assert_eq!((d1, d2, x1), (2.0, 3.0, 1.0));
+    }
+
+    #[test]
+    fn test_drotmg_negative_d1() {
+        let (mut d1, mut d2, mut x1, y1): (f64, f64, f64, f64) = (-1.0, 2.0, 3.0, 4.0);
+        let mut param: [f64; 5] = [9.0; 5];
+        drotmg(&mut d1, &mut d2, &mut x1, &y1, &mut param);
+        assert_eq!(param, [-1.0, 0.0, 0.0, 0.0, 0.0]);
+        assert_eq!((d1, d2, x1), (0.0, 0.0, 0.0));
+    }
+
+    #[test]
+    fn test_drotmg_negative_q2() {
+        // d2 < 0 and |d2*y1^2| >= |d1*x1^2|
+        let (mut d1, mut d2, mut x1, y1): (f64, f64, f64, f64) = (1.0, -1.0, 1.0, 2.0);
+        let mut param: [f64; 5] = [9.0; 5];
+        drotmg(&mut d1, &mut d2, &mut x1, &y1, &mut param);
+        assert_eq!(param, [-1.0, 0.0, 0.0, 0.0, 0.0]);
+        assert_eq!((d1, d2, x1), (0.0, 0.0, 0.0));
+    }
+
+    // Calls rotmg, then checks that rotm with the returned param zeroes y1,
+    // turns x1 into the returned x1, and preserves the weighted norm.
+    fn check_drotmg_with_drotm(d1: f64, d2: f64, x1: f64, y1: f64) -> f64 {
+        let (mut d1n, mut d2n, mut x1n) = (d1, d2, x1);
+        let mut param: [f64; 5] = [9.0; 5];
+        drotmg(&mut d1n, &mut d2n, &mut x1n, &y1, &mut param);
+        let mut x = vec![x1];
+        let mut y = vec![y1];
+        drotm(&mut x, &mut y, param);
+        let tol: f64 = 1e-12;
+        assert!(
+            (x[0] - x1n).abs() <= tol * x1n.abs(),
+            "x: {} != {}",
+            x[0],
+            x1n
+        );
+        assert!(y[0].abs() <= tol * x1n.abs(), "y not zeroed: {}", y[0]);
+        let before = d1 * x1 * x1 + d2 * y1 * y1;
+        let after = d1n * x1n * x1n;
+        assert!(
+            (before - after).abs() <= tol * before.abs(),
+            "norm: {before} != {after}"
+        );
+        param[0]
+    }
+
+    #[test]
+    fn test_drotmg_then_drotm() {
+        assert_eq!(check_drotmg_with_drotm(1.0, 1.0, 2.0, 1.0), 0.0);
+        assert_eq!(check_drotmg_with_drotm(1.0, 1.0, 1.0, 2.0), 1.0);
+        assert_eq!(check_drotmg_with_drotm(2.0, 0.5, -3.0, 1.5), 0.0);
+        assert_eq!(check_drotmg_with_drotm(0.5, 3.0, 1.0, -4.0), 1.0);
     }
 }
