@@ -42,7 +42,10 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: ${{ matrix.toolchain }}
-          components: clippy
+          components: clippy, llvm-tools-preview
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Build
         run: cargo build ${{ matrix.release_flag }}
@@ -52,6 +55,9 @@ jobs:
 
       - name: Unit Tests
         run: cargo test ${{ matrix.release_flag }}
+
+      - name: Check 100% coverage
+        run: cargo llvm-cov ${{ matrix.release_flag }} --summary-only --fail-under-lines 100 --fail-under-regions 100 --fail-under-functions 100
 
       - name: Docs
         run: cargo doc --no-deps ${{ matrix.release_flag }}
