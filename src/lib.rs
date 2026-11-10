@@ -314,8 +314,42 @@ fn zrotg(a: &mut Complex<f64>, b: &Complex<f64>, c: &mut f64, s: &mut Complex<f6
     *a = alpha * d;
 }
 
-fn rotm() {
-    todo!()
+fn srotm(x: &mut [f32], y: &mut [f32], param: [f32; 5]) {
+    // NOTE: param is in column-major order, so it's [flag, h11, h21, h12, h22]
+    assert!(x.len() == y.len()); // FIXME: not correct but good enough for now
+    // h is in row-major order, so: h11, h12, h21, h22
+    let h: [f32; 4] = match param[0] {
+        -2.0f32 => [1.0f32, 0.0f32, 0.0f32, 1.0f32],
+        -1.0f32 => [param[1], param[3], param[2], param[4]],
+        0.0f32 => [1.0f32, param[3], param[2], 1.0f32],
+        1.0f32 => [param[1], 1.0f32, -1.0f32, param[4]],
+        _ => panic!("Invalid value for flag: {}", param[0]),
+    };
+    for i in 0..x.len() {
+        let xi = x[i];
+        let yi = y[i];
+        x[i] = h[0] * xi + h[1] * yi;
+        y[i] = h[2] * xi + h[3] * yi;
+    }
+}
+
+fn drotm(x: &mut [f64], y: &mut [f64], param: [f64; 5]) {
+    // NOTE: param is in column-major order, so it's [flag, h11, h21, h12, h22]
+    assert!(x.len() == y.len()); // FIXME: not correct but good enough for now
+    // h is in row-major order, so: h11, h12, h21, h22
+    let h: [f64; 4] = match param[0] {
+        -2.0f64 => [1.0f64, 0.0f64, 0.0f64, 1.0f64],
+        -1.0f64 => [param[1], param[3], param[2], param[4]],
+        0.0f64 => [1.0f64, param[3], param[2], 1.0f64],
+        1.0f64 => [param[1], 1.0f64, -1.0f64, param[4]],
+        _ => panic!("Invalid value for flag: {}", param[0]),
+    };
+    for i in 0..x.len() {
+        let xi = x[i];
+        let yi = y[i];
+        x[i] = h[0] * xi + h[1] * yi;
+        y[i] = h[2] * xi + h[3] * yi;
+    }
 }
 
 fn rotmg() {
@@ -1347,5 +1381,131 @@ mod tests {
         zrot(&mut x, &mut y, c, s);
         assert_close_c64(&x, &[a]);
         assert_close_c64(&y, &[Complex::new(0.0, 0.0)]);
+    }
+
+    // BLAS rotm: param = [flag, h11, h21, h12, h22], applies
+    //   x' = h11*x + h12*y,  y' = h21*x + h22*y
+    // flag -1: full H; flag 0: h11 = h22 = 1; flag 1: h21 = -1, h12 = 1; flag -2: identity.
+    // The 9.0 entries are not used for that flag, and must be ignored.
+    #[test]
+    fn test_srotm_full() {
+        let mut x: Vec<f32> = vec![1.0, 2.0, -1.0];
+        let mut y: Vec<f32> = vec![3.0, -1.0, 4.0];
+        srotm(&mut x, &mut y, [-1.0, 2.0, 3.0, 0.5, -1.0]);
+        assert_eq!(x, vec![3.5, 3.5, 0.0]);
+        assert_eq!(y, vec![0.0, 7.0, -7.0]);
+    }
+
+    #[test]
+    fn test_srotm_flag_zero() {
+        let mut x: Vec<f32> = vec![1.0, 2.0, -1.0];
+        let mut y: Vec<f32> = vec![3.0, -1.0, 4.0];
+        srotm(&mut x, &mut y, [0.0, 9.0, 3.0, 0.5, 9.0]);
+        assert_eq!(x, vec![2.5, 1.5, 1.0]);
+        assert_eq!(y, vec![6.0, 5.0, 1.0]);
+    }
+
+    #[test]
+    fn test_srotm_flag_one() {
+        let mut x: Vec<f32> = vec![1.0, 2.0, -1.0];
+        let mut y: Vec<f32> = vec![3.0, -1.0, 4.0];
+        srotm(&mut x, &mut y, [1.0, 2.0, 9.0, 9.0, -1.0]);
+        assert_eq!(x, vec![5.0, 3.0, 2.0]);
+        assert_eq!(y, vec![-4.0, -1.0, -3.0]);
+    }
+
+    #[test]
+    fn test_srotm_identity() {
+        let mut x: Vec<f32> = vec![1.0, 2.0, -1.0];
+        let mut y: Vec<f32> = vec![3.0, -1.0, 4.0];
+        srotm(&mut x, &mut y, [-2.0, 9.0, 9.0, 9.0, 9.0]);
+        assert_eq!(x, vec![1.0, 2.0, -1.0]);
+        assert_eq!(y, vec![3.0, -1.0, 4.0]);
+    }
+
+    #[test]
+    fn test_srotm_single_element() {
+        let mut x: Vec<f32> = vec![1.0];
+        let mut y: Vec<f32> = vec![3.0];
+        srotm(&mut x, &mut y, [-1.0, 2.0, 3.0, 0.5, -1.0]);
+        assert_eq!(x, vec![3.5]);
+        assert_eq!(y, vec![0.0]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_srotm_invalid_flag() {
+        let mut x: Vec<f32> = vec![1.0];
+        let mut y: Vec<f32> = vec![1.0];
+        srotm(&mut x, &mut y, [0.5, 1.0, 0.0, 0.0, 1.0]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_srotm_length_mismatch() {
+        let mut x: Vec<f32> = vec![1.0, 2.0, 3.0];
+        let mut y: Vec<f32> = vec![1.0, 2.0];
+        srotm(&mut x, &mut y, [-2.0, 0.0, 0.0, 0.0, 0.0]);
+    }
+
+    #[test]
+    fn test_drotm_full() {
+        let mut x: Vec<f64> = vec![1.0, 2.0, -1.0];
+        let mut y: Vec<f64> = vec![3.0, -1.0, 4.0];
+        drotm(&mut x, &mut y, [-1.0, 2.0, 3.0, 0.5, -1.0]);
+        assert_eq!(x, vec![3.5, 3.5, 0.0]);
+        assert_eq!(y, vec![0.0, 7.0, -7.0]);
+    }
+
+    #[test]
+    fn test_drotm_flag_zero() {
+        let mut x: Vec<f64> = vec![1.0, 2.0, -1.0];
+        let mut y: Vec<f64> = vec![3.0, -1.0, 4.0];
+        drotm(&mut x, &mut y, [0.0, 9.0, 3.0, 0.5, 9.0]);
+        assert_eq!(x, vec![2.5, 1.5, 1.0]);
+        assert_eq!(y, vec![6.0, 5.0, 1.0]);
+    }
+
+    #[test]
+    fn test_drotm_flag_one() {
+        let mut x: Vec<f64> = vec![1.0, 2.0, -1.0];
+        let mut y: Vec<f64> = vec![3.0, -1.0, 4.0];
+        drotm(&mut x, &mut y, [1.0, 2.0, 9.0, 9.0, -1.0]);
+        assert_eq!(x, vec![5.0, 3.0, 2.0]);
+        assert_eq!(y, vec![-4.0, -1.0, -3.0]);
+    }
+
+    #[test]
+    fn test_drotm_identity() {
+        let mut x: Vec<f64> = vec![1.0, 2.0, -1.0];
+        let mut y: Vec<f64> = vec![3.0, -1.0, 4.0];
+        drotm(&mut x, &mut y, [-2.0, 9.0, 9.0, 9.0, 9.0]);
+        assert_eq!(x, vec![1.0, 2.0, -1.0]);
+        assert_eq!(y, vec![3.0, -1.0, 4.0]);
+    }
+
+    #[test]
+    fn test_drotm_single_element() {
+        let mut x: Vec<f64> = vec![1.0];
+        let mut y: Vec<f64> = vec![3.0];
+        drotm(&mut x, &mut y, [-1.0, 2.0, 3.0, 0.5, -1.0]);
+        assert_eq!(x, vec![3.5]);
+        assert_eq!(y, vec![0.0]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_drotm_invalid_flag() {
+        let mut x: Vec<f64> = vec![1.0];
+        let mut y: Vec<f64> = vec![1.0];
+        drotm(&mut x, &mut y, [0.5, 1.0, 0.0, 0.0, 1.0]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_drotm_length_mismatch() {
+        let mut x: Vec<f64> = vec![1.0, 2.0, 3.0];
+        let mut y: Vec<f64> = vec![1.0, 2.0];
+        drotm(&mut x, &mut y, [-2.0, 0.0, 0.0, 0.0, 0.0]);
     }
 }
