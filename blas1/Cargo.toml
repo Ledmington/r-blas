@@ -11,4 +11,3 @@ name = "rblas1"
 crate-type = ["rlib", "staticlib", "cdylib"]
 
 [dependencies]
-num-complex = "0.4.6"

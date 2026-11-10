@@ -1,6 +1,8 @@
 #![forbid(unsafe_code)]
 
-use num_complex::Complex;
+use crate::complex::Complex;
+
+mod complex;
 
 pub fn sasum(x: &[f32]) -> f32 {
     let mut s = 0.0f32;
@@ -102,7 +104,7 @@ pub fn ddot(x: &[f64], y: &[f64]) -> f64 {
 
 pub fn cdotu(x: &[Complex<f32>], y: &[Complex<f32>]) -> Complex<f32> {
     assert!(x.len() == y.len());
-    let mut s = Complex::default();
+    let mut s: Complex<f32> = Complex::default();
     for i in 0..x.len() {
         s += x[i] * y[i];
     }
@@ -111,7 +113,7 @@ pub fn cdotu(x: &[Complex<f32>], y: &[Complex<f32>]) -> Complex<f32> {
 
 pub fn zdotu(x: &[Complex<f64>], y: &[Complex<f64>]) -> Complex<f64> {
     assert!(x.len() == y.len());
-    let mut s = Complex::default();
+    let mut s: Complex<f64> = Complex::default();
     for i in 0..x.len() {
         s += x[i] * y[i];
     }
@@ -120,7 +122,7 @@ pub fn zdotu(x: &[Complex<f64>], y: &[Complex<f64>]) -> Complex<f64> {
 
 pub fn cdotc(x: &[Complex<f32>], y: &[Complex<f32>]) -> Complex<f32> {
     assert!(x.len() == y.len());
-    let mut s = Complex::default();
+    let mut s: Complex<f32> = Complex::default();
     for i in 0..x.len() {
         s += x[i].conj() * y[i];
     }
@@ -129,7 +131,7 @@ pub fn cdotc(x: &[Complex<f32>], y: &[Complex<f32>]) -> Complex<f32> {
 
 pub fn zdotc(x: &[Complex<f64>], y: &[Complex<f64>]) -> Complex<f64> {
     assert!(x.len() == y.len());
-    let mut s = Complex::default();
+    let mut s: Complex<f64> = Complex::default();
     for i in 0..x.len() {
         s += x[i].conj() * y[i];
     }
