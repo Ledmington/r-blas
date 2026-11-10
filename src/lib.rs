@@ -486,8 +486,44 @@ fn zdscal(a: f64, x: &mut [Complex<f64>]) {
     }
 }
 
-fn swap() {
-    todo!()
+fn sswap(x: &mut [f32], y: &mut [f32]) {
+    assert!(x.len() == y.len());
+    for i in 0..x.len() {
+        let xi = x[i];
+        let yi = y[i];
+        x[i] = yi;
+        y[i] = xi;
+    }
+}
+
+fn dswap(x: &mut [f64], y: &mut [f64]) {
+    assert!(x.len() == y.len());
+    for i in 0..x.len() {
+        let xi = x[i];
+        let yi = y[i];
+        x[i] = yi;
+        y[i] = xi;
+    }
+}
+
+fn cswap(x: &mut [Complex<f32>], y: &mut [Complex<f32>]) {
+    assert!(x.len() == y.len());
+    for i in 0..x.len() {
+        let xi = x[i];
+        let yi = y[i];
+        x[i] = yi;
+        y[i] = xi;
+    }
+}
+
+fn zswap(x: &mut [Complex<f64>], y: &mut [Complex<f64>]) {
+    assert!(x.len() == y.len());
+    for i in 0..x.len() {
+        let xi = x[i];
+        let yi = y[i];
+        x[i] = yi;
+        y[i] = xi;
+    }
 }
 
 fn iamax() {
@@ -2042,5 +2078,149 @@ mod tests {
         let mut x: Vec<Complex<f64>> = vec![];
         zdscal(2.0, &mut x);
         assert!(x.is_empty());
+    }
+
+    #[test]
+    fn test_sswap() {
+        let mut x: Vec<f32> = vec![1.0, -2.0, 3.5];
+        let mut y: Vec<f32> = vec![4.0, 5.0, -6.5];
+        sswap(&mut x, &mut y);
+        assert_eq!(x, vec![4.0, 5.0, -6.5]);
+        assert_eq!(y, vec![1.0, -2.0, 3.5]);
+    }
+
+    #[test]
+    fn test_sswap_twice_is_identity() {
+        let mut x: Vec<f32> = vec![1.0, -2.0, 3.5];
+        let mut y: Vec<f32> = vec![4.0, 5.0, -6.5];
+        sswap(&mut x, &mut y);
+        sswap(&mut x, &mut y);
+        assert_eq!(x, vec![1.0, -2.0, 3.5]);
+        assert_eq!(y, vec![4.0, 5.0, -6.5]);
+    }
+
+    #[test]
+    fn test_sswap_empty() {
+        let mut x: Vec<f32> = vec![];
+        let mut y: Vec<f32> = vec![];
+        sswap(&mut x, &mut y);
+        assert!(x.is_empty());
+        assert!(y.is_empty());
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_sswap_length_mismatch() {
+        let mut x: Vec<f32> = vec![1.0, 2.0, 3.0];
+        let mut y: Vec<f32> = vec![1.0, 2.0];
+        sswap(&mut x, &mut y);
+    }
+
+    #[test]
+    fn test_dswap() {
+        let mut x: Vec<f64> = vec![1.0, -2.0, 3.5];
+        let mut y: Vec<f64> = vec![4.0, 5.0, -6.5];
+        dswap(&mut x, &mut y);
+        assert_eq!(x, vec![4.0, 5.0, -6.5]);
+        assert_eq!(y, vec![1.0, -2.0, 3.5]);
+    }
+
+    #[test]
+    fn test_dswap_twice_is_identity() {
+        let mut x: Vec<f64> = vec![1.0, -2.0, 3.5];
+        let mut y: Vec<f64> = vec![4.0, 5.0, -6.5];
+        dswap(&mut x, &mut y);
+        dswap(&mut x, &mut y);
+        assert_eq!(x, vec![1.0, -2.0, 3.5]);
+        assert_eq!(y, vec![4.0, 5.0, -6.5]);
+    }
+
+    #[test]
+    fn test_dswap_empty() {
+        let mut x: Vec<f64> = vec![];
+        let mut y: Vec<f64> = vec![];
+        dswap(&mut x, &mut y);
+        assert!(x.is_empty());
+        assert!(y.is_empty());
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_dswap_length_mismatch() {
+        let mut x: Vec<f64> = vec![1.0, 2.0, 3.0];
+        let mut y: Vec<f64> = vec![1.0, 2.0];
+        dswap(&mut x, &mut y);
+    }
+
+    #[test]
+    fn test_cswap() {
+        let mut x: Vec<Complex<f32>> = vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)];
+        let mut y: Vec<Complex<f32>> = vec![Complex::new(4.0, -1.0), Complex::new(-2.5, 0.0)];
+        cswap(&mut x, &mut y);
+        assert_eq!(x, vec![Complex::new(4.0, -1.0), Complex::new(-2.5, 0.0)]);
+        assert_eq!(y, vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)]);
+    }
+
+    #[test]
+    fn test_cswap_twice_is_identity() {
+        let mut x: Vec<Complex<f32>> = vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)];
+        let mut y: Vec<Complex<f32>> = vec![Complex::new(4.0, -1.0), Complex::new(-2.5, 0.0)];
+        cswap(&mut x, &mut y);
+        cswap(&mut x, &mut y);
+        assert_eq!(x, vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)]);
+        assert_eq!(y, vec![Complex::new(4.0, -1.0), Complex::new(-2.5, 0.0)]);
+    }
+
+    #[test]
+    fn test_cswap_empty() {
+        let mut x: Vec<Complex<f32>> = vec![];
+        let mut y: Vec<Complex<f32>> = vec![];
+        cswap(&mut x, &mut y);
+        assert!(x.is_empty());
+        assert!(y.is_empty());
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_cswap_length_mismatch() {
+        let mut x: Vec<Complex<f32>> = vec![Complex::new(1.0, 0.0); 3];
+        let mut y: Vec<Complex<f32>> = vec![Complex::new(1.0, 0.0); 2];
+        cswap(&mut x, &mut y);
+    }
+
+    #[test]
+    fn test_zswap() {
+        let mut x: Vec<Complex<f64>> = vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)];
+        let mut y: Vec<Complex<f64>> = vec![Complex::new(4.0, -1.0), Complex::new(-2.5, 0.0)];
+        zswap(&mut x, &mut y);
+        assert_eq!(x, vec![Complex::new(4.0, -1.0), Complex::new(-2.5, 0.0)]);
+        assert_eq!(y, vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)]);
+    }
+
+    #[test]
+    fn test_zswap_twice_is_identity() {
+        let mut x: Vec<Complex<f64>> = vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)];
+        let mut y: Vec<Complex<f64>> = vec![Complex::new(4.0, -1.0), Complex::new(-2.5, 0.0)];
+        zswap(&mut x, &mut y);
+        zswap(&mut x, &mut y);
+        assert_eq!(x, vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)]);
+        assert_eq!(y, vec![Complex::new(4.0, -1.0), Complex::new(-2.5, 0.0)]);
+    }
+
+    #[test]
+    fn test_zswap_empty() {
+        let mut x: Vec<Complex<f64>> = vec![];
+        let mut y: Vec<Complex<f64>> = vec![];
+        zswap(&mut x, &mut y);
+        assert!(x.is_empty());
+        assert!(y.is_empty());
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_zswap_length_mismatch() {
+        let mut x: Vec<Complex<f64>> = vec![Complex::new(1.0, 0.0); 3];
+        let mut y: Vec<Complex<f64>> = vec![Complex::new(1.0, 0.0); 2];
+        zswap(&mut x, &mut y);
     }
 }
