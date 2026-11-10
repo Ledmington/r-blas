@@ -2,7 +2,7 @@
 
 use num_complex::Complex;
 
-fn sasum(x: &[f32]) -> f32 {
+pub fn sasum(x: &[f32]) -> f32 {
     let mut s = 0.0f32;
     for xi in x {
         s += xi.abs();
@@ -10,7 +10,7 @@ fn sasum(x: &[f32]) -> f32 {
     s
 }
 
-fn dasum(x: &[f64]) -> f64 {
+pub fn dasum(x: &[f64]) -> f64 {
     let mut s = 0.0f64;
     for xi in x {
         s += xi.abs();
@@ -18,7 +18,7 @@ fn dasum(x: &[f64]) -> f64 {
     s
 }
 
-fn scasum(x: &[Complex<f32>]) -> f32 {
+pub fn scasum(x: &[Complex<f32>]) -> f32 {
     let mut s = 0.0f32;
     for xi in x {
         s += xi.re.abs() + xi.im.abs();
@@ -26,7 +26,7 @@ fn scasum(x: &[Complex<f32>]) -> f32 {
     s
 }
 
-fn dzasum(x: &[Complex<f64>]) -> f64 {
+pub fn dzasum(x: &[Complex<f64>]) -> f64 {
     let mut s = 0.0f64;
     for xi in x {
         s += xi.re.abs() + xi.im.abs();
@@ -34,55 +34,55 @@ fn dzasum(x: &[Complex<f64>]) -> f64 {
     s
 }
 
-fn saxpy(a: f32, x: &[f32], y: &mut [f32]) {
+pub fn saxpy(a: f32, x: &[f32], y: &mut [f32]) {
     assert!(x.len() == y.len());
     for i in 0..x.len() {
         y[i] += a * x[i];
     }
 }
 
-fn daxpy(a: f64, x: &[f64], y: &mut [f64]) {
+pub fn daxpy(a: f64, x: &[f64], y: &mut [f64]) {
     assert!(x.len() == y.len());
     for i in 0..x.len() {
         y[i] += a * x[i];
     }
 }
 
-fn caxpy(a: Complex<f32>, x: &[Complex<f32>], y: &mut [Complex<f32>]) {
+pub fn caxpy(a: Complex<f32>, x: &[Complex<f32>], y: &mut [Complex<f32>]) {
     assert!(x.len() == y.len());
     for i in 0..x.len() {
         y[i] += a * x[i];
     }
 }
 
-fn zaxpy(a: Complex<f64>, x: &[Complex<f64>], y: &mut [Complex<f64>]) {
+pub fn zaxpy(a: Complex<f64>, x: &[Complex<f64>], y: &mut [Complex<f64>]) {
     assert!(x.len() == y.len());
     for i in 0..x.len() {
         y[i] += a * x[i];
     }
 }
 
-fn scopy(x: &[f32], y: &mut [f32]) {
+pub fn scopy(x: &[f32], y: &mut [f32]) {
     assert!(x.len() == y.len());
     y[..x.len()].copy_from_slice(x);
 }
 
-fn dcopy(x: &[f64], y: &mut [f64]) {
+pub fn dcopy(x: &[f64], y: &mut [f64]) {
     assert!(x.len() == y.len());
     y[..x.len()].copy_from_slice(x);
 }
 
-fn ccopy(x: &[Complex<f32>], y: &mut [Complex<f32>]) {
+pub fn ccopy(x: &[Complex<f32>], y: &mut [Complex<f32>]) {
     assert!(x.len() == y.len());
     y[..x.len()].copy_from_slice(x);
 }
 
-fn zcopy(x: &[Complex<f64>], y: &mut [Complex<f64>]) {
+pub fn zcopy(x: &[Complex<f64>], y: &mut [Complex<f64>]) {
     assert!(x.len() == y.len());
     y[..x.len()].copy_from_slice(x);
 }
 
-fn sdot(x: &[f32], y: &[f32]) -> f32 {
+pub fn sdot(x: &[f32], y: &[f32]) -> f32 {
     assert!(x.len() == y.len());
     let mut s = 0.0f32;
     for i in 0..x.len() {
@@ -91,7 +91,7 @@ fn sdot(x: &[f32], y: &[f32]) -> f32 {
     s
 }
 
-fn ddot(x: &[f64], y: &[f64]) -> f64 {
+pub fn ddot(x: &[f64], y: &[f64]) -> f64 {
     assert!(x.len() == y.len());
     let mut s = 0.0f64;
     for i in 0..x.len() {
@@ -100,7 +100,7 @@ fn ddot(x: &[f64], y: &[f64]) -> f64 {
     s
 }
 
-fn cdotu(x: &[Complex<f32>], y: &[Complex<f32>]) -> Complex<f32> {
+pub fn cdotu(x: &[Complex<f32>], y: &[Complex<f32>]) -> Complex<f32> {
     assert!(x.len() == y.len());
     let mut s = Complex::default();
     for i in 0..x.len() {
@@ -109,7 +109,7 @@ fn cdotu(x: &[Complex<f32>], y: &[Complex<f32>]) -> Complex<f32> {
     s
 }
 
-fn zdotu(x: &[Complex<f64>], y: &[Complex<f64>]) -> Complex<f64> {
+pub fn zdotu(x: &[Complex<f64>], y: &[Complex<f64>]) -> Complex<f64> {
     assert!(x.len() == y.len());
     let mut s = Complex::default();
     for i in 0..x.len() {
@@ -118,7 +118,7 @@ fn zdotu(x: &[Complex<f64>], y: &[Complex<f64>]) -> Complex<f64> {
     s
 }
 
-fn cdotc(x: &[Complex<f32>], y: &[Complex<f32>]) -> Complex<f32> {
+pub fn cdotc(x: &[Complex<f32>], y: &[Complex<f32>]) -> Complex<f32> {
     assert!(x.len() == y.len());
     let mut s = Complex::default();
     for i in 0..x.len() {
@@ -127,7 +127,7 @@ fn cdotc(x: &[Complex<f32>], y: &[Complex<f32>]) -> Complex<f32> {
     s
 }
 
-fn zdotc(x: &[Complex<f64>], y: &[Complex<f64>]) -> Complex<f64> {
+pub fn zdotc(x: &[Complex<f64>], y: &[Complex<f64>]) -> Complex<f64> {
     assert!(x.len() == y.len());
     let mut s = Complex::default();
     for i in 0..x.len() {
@@ -136,7 +136,7 @@ fn zdotc(x: &[Complex<f64>], y: &[Complex<f64>]) -> Complex<f64> {
     s
 }
 
-fn snrm2(x: &[f32]) -> f32 {
+pub fn snrm2(x: &[f32]) -> f32 {
     let mut s = 0.0f32;
     for xi in x {
         s += xi * xi;
@@ -144,7 +144,7 @@ fn snrm2(x: &[f32]) -> f32 {
     s.sqrt()
 }
 
-fn dnrm2(x: &[f64]) -> f64 {
+pub fn dnrm2(x: &[f64]) -> f64 {
     let mut s = 0.0f64;
     for xi in x {
         s += xi * xi;
@@ -152,7 +152,7 @@ fn dnrm2(x: &[f64]) -> f64 {
     s.sqrt()
 }
 
-fn scnrm2(x: &[Complex<f32>]) -> f32 {
+pub fn scnrm2(x: &[Complex<f32>]) -> f32 {
     let mut s = 0.0f32;
     for xi in x {
         s += xi.norm_sqr();
@@ -160,7 +160,7 @@ fn scnrm2(x: &[Complex<f32>]) -> f32 {
     s.sqrt()
 }
 
-fn dznrm2(x: &[Complex<f64>]) -> f64 {
+pub fn dznrm2(x: &[Complex<f64>]) -> f64 {
     let mut s = 0.0f64;
     for xi in x {
         s += xi.norm_sqr();
@@ -168,7 +168,7 @@ fn dznrm2(x: &[Complex<f64>]) -> f64 {
     s.sqrt()
 }
 
-fn srot(x: &mut [f32], y: &mut [f32], c: f32, s: f32) {
+pub fn srot(x: &mut [f32], y: &mut [f32], c: f32, s: f32) {
     assert!(x.len() == y.len());
     for i in 0..x.len() {
         let xi = x[i];
@@ -178,7 +178,7 @@ fn srot(x: &mut [f32], y: &mut [f32], c: f32, s: f32) {
     }
 }
 
-fn drot(x: &mut [f64], y: &mut [f64], c: f64, s: f64) {
+pub fn drot(x: &mut [f64], y: &mut [f64], c: f64, s: f64) {
     assert!(x.len() == y.len());
     for i in 0..x.len() {
         let xi = x[i];
@@ -188,7 +188,7 @@ fn drot(x: &mut [f64], y: &mut [f64], c: f64, s: f64) {
     }
 }
 
-fn csrot(x: &mut [Complex<f32>], y: &mut [Complex<f32>], c: f32, s: f32) {
+pub fn csrot(x: &mut [Complex<f32>], y: &mut [Complex<f32>], c: f32, s: f32) {
     assert!(x.len() == y.len());
     for i in 0..x.len() {
         let xi = x[i];
@@ -198,7 +198,7 @@ fn csrot(x: &mut [Complex<f32>], y: &mut [Complex<f32>], c: f32, s: f32) {
     }
 }
 
-fn zdrot(x: &mut [Complex<f64>], y: &mut [Complex<f64>], c: f64, s: f64) {
+pub fn zdrot(x: &mut [Complex<f64>], y: &mut [Complex<f64>], c: f64, s: f64) {
     assert!(x.len() == y.len());
     for i in 0..x.len() {
         let xi = x[i];
@@ -208,7 +208,7 @@ fn zdrot(x: &mut [Complex<f64>], y: &mut [Complex<f64>], c: f64, s: f64) {
     }
 }
 
-fn crot(x: &mut [Complex<f32>], y: &mut [Complex<f32>], c: f32, s: Complex<f32>) {
+pub fn crot(x: &mut [Complex<f32>], y: &mut [Complex<f32>], c: f32, s: Complex<f32>) {
     assert!(x.len() == y.len());
     for i in 0..x.len() {
         let xi = x[i];
@@ -218,7 +218,7 @@ fn crot(x: &mut [Complex<f32>], y: &mut [Complex<f32>], c: f32, s: Complex<f32>)
     }
 }
 
-fn zrot(x: &mut [Complex<f64>], y: &mut [Complex<f64>], c: f64, s: Complex<f64>) {
+pub fn zrot(x: &mut [Complex<f64>], y: &mut [Complex<f64>], c: f64, s: Complex<f64>) {
     assert!(x.len() == y.len());
     for i in 0..x.len() {
         let xi = x[i];
@@ -228,7 +228,7 @@ fn zrot(x: &mut [Complex<f64>], y: &mut [Complex<f64>], c: f64, s: Complex<f64>)
     }
 }
 
-fn srotg(a: &mut f32, b: &mut f32, c: &mut f32, s: &mut f32) {
+pub fn srotg(a: &mut f32, b: &mut f32, c: &mut f32, s: &mut f32) {
     let roe = if a.abs() > b.abs() { *a } else { *b };
     let scale = a.abs() + b.abs();
     if scale == 0.0f32 {
@@ -254,7 +254,7 @@ fn srotg(a: &mut f32, b: &mut f32, c: &mut f32, s: &mut f32) {
     *b = z;
 }
 
-fn drotg(a: &mut f64, b: &mut f64, c: &mut f64, s: &mut f64) {
+pub fn drotg(a: &mut f64, b: &mut f64, c: &mut f64, s: &mut f64) {
     let roe = if a.abs() > b.abs() { *a } else { *b };
     let scale = a.abs() + b.abs();
     if scale == 0.0f64 {
@@ -280,7 +280,7 @@ fn drotg(a: &mut f64, b: &mut f64, c: &mut f64, s: &mut f64) {
     *b = z;
 }
 
-fn crotg(a: &mut Complex<f32>, b: &Complex<f32>, c: &mut f32, s: &mut Complex<f32>) {
+pub fn crotg(a: &mut Complex<f32>, b: &Complex<f32>, c: &mut f32, s: &mut Complex<f32>) {
     let abs_a = a.norm();
     if abs_a == 0.0f32 {
         *c = 0.0f32;
@@ -297,7 +297,7 @@ fn crotg(a: &mut Complex<f32>, b: &Complex<f32>, c: &mut f32, s: &mut Complex<f3
     *a = alpha * d;
 }
 
-fn zrotg(a: &mut Complex<f64>, b: &Complex<f64>, c: &mut f64, s: &mut Complex<f64>) {
+pub fn zrotg(a: &mut Complex<f64>, b: &Complex<f64>, c: &mut f64, s: &mut Complex<f64>) {
     let abs_a = a.norm();
     if abs_a == 0.0f64 {
         *c = 0.0f64;
@@ -314,7 +314,7 @@ fn zrotg(a: &mut Complex<f64>, b: &Complex<f64>, c: &mut f64, s: &mut Complex<f6
     *a = alpha * d;
 }
 
-fn srotm(x: &mut [f32], y: &mut [f32], param: [f32; 5]) {
+pub fn srotm(x: &mut [f32], y: &mut [f32], param: [f32; 5]) {
     // NOTE: param is in column-major order, so it's [flag, h11, h21, h12, h22]
     assert!(x.len() == y.len()); // FIXME: not correct but good enough for now
     // h is in row-major order, so: h11, h12, h21, h22
@@ -333,7 +333,7 @@ fn srotm(x: &mut [f32], y: &mut [f32], param: [f32; 5]) {
     }
 }
 
-fn drotm(x: &mut [f64], y: &mut [f64], param: [f64; 5]) {
+pub fn drotm(x: &mut [f64], y: &mut [f64], param: [f64; 5]) {
     // NOTE: param is in column-major order, so it's [flag, h11, h21, h12, h22]
     assert!(x.len() == y.len()); // FIXME: not correct but good enough for now
     // h is in row-major order, so: h11, h12, h21, h22
@@ -352,7 +352,7 @@ fn drotm(x: &mut [f64], y: &mut [f64], param: [f64; 5]) {
     }
 }
 
-fn srotmg(d1: &mut f32, d2: &mut f32, x1: &mut f32, y1: &f32, param: &mut [f32; 5]) {
+pub fn srotmg(d1: &mut f32, d2: &mut f32, x1: &mut f32, y1: &f32, param: &mut [f32; 5]) {
     // NOTE: param is in column-major order, so it's [flag, h11, h21, h12, h22]
     if *d1 >= 0.0f32 {
         let p2 = *d2 * *y1;
@@ -401,7 +401,7 @@ fn srotmg(d1: &mut f32, d2: &mut f32, x1: &mut f32, y1: &f32, param: &mut [f32; 
     *x1 = 0.0f32;
 }
 
-fn drotmg(d1: &mut f64, d2: &mut f64, x1: &mut f64, y1: &f64, param: &mut [f64; 5]) {
+pub fn drotmg(d1: &mut f64, d2: &mut f64, x1: &mut f64, y1: &f64, param: &mut [f64; 5]) {
     // NOTE: param is in column-major order, so it's [flag, h11, h21, h12, h22]
     if *d1 >= 0.0f64 {
         let p2 = *d2 * *y1;
@@ -450,43 +450,43 @@ fn drotmg(d1: &mut f64, d2: &mut f64, x1: &mut f64, y1: &f64, param: &mut [f64; 
     *x1 = 0.0f64;
 }
 
-fn sscal(a: f32, x: &mut [f32]) {
+pub fn sscal(a: f32, x: &mut [f32]) {
     for xi in x {
         *xi *= a;
     }
 }
 
-fn dscal(a: f64, x: &mut [f64]) {
+pub fn dscal(a: f64, x: &mut [f64]) {
     for xi in x {
         *xi *= a;
     }
 }
 
-fn cscal(a: Complex<f32>, x: &mut [Complex<f32>]) {
+pub fn cscal(a: Complex<f32>, x: &mut [Complex<f32>]) {
     for xi in x {
         *xi *= a;
     }
 }
 
-fn zscal(a: Complex<f64>, x: &mut [Complex<f64>]) {
+pub fn zscal(a: Complex<f64>, x: &mut [Complex<f64>]) {
     for xi in x {
         *xi *= a;
     }
 }
 
-fn csscal(a: f32, x: &mut [Complex<f32>]) {
+pub fn csscal(a: f32, x: &mut [Complex<f32>]) {
     for xi in x {
         *xi *= a;
     }
 }
 
-fn zdscal(a: f64, x: &mut [Complex<f64>]) {
+pub fn zdscal(a: f64, x: &mut [Complex<f64>]) {
     for xi in x {
         *xi *= a;
     }
 }
 
-fn sswap(x: &mut [f32], y: &mut [f32]) {
+pub fn sswap(x: &mut [f32], y: &mut [f32]) {
     assert!(x.len() == y.len());
     for i in 0..x.len() {
         let xi = x[i];
@@ -496,7 +496,7 @@ fn sswap(x: &mut [f32], y: &mut [f32]) {
     }
 }
 
-fn dswap(x: &mut [f64], y: &mut [f64]) {
+pub fn dswap(x: &mut [f64], y: &mut [f64]) {
     assert!(x.len() == y.len());
     for i in 0..x.len() {
         let xi = x[i];
@@ -506,7 +506,7 @@ fn dswap(x: &mut [f64], y: &mut [f64]) {
     }
 }
 
-fn cswap(x: &mut [Complex<f32>], y: &mut [Complex<f32>]) {
+pub fn cswap(x: &mut [Complex<f32>], y: &mut [Complex<f32>]) {
     assert!(x.len() == y.len());
     for i in 0..x.len() {
         let xi = x[i];
@@ -516,7 +516,7 @@ fn cswap(x: &mut [Complex<f32>], y: &mut [Complex<f32>]) {
     }
 }
 
-fn zswap(x: &mut [Complex<f64>], y: &mut [Complex<f64>]) {
+pub fn zswap(x: &mut [Complex<f64>], y: &mut [Complex<f64>]) {
     assert!(x.len() == y.len());
     for i in 0..x.len() {
         let xi = x[i];
@@ -526,7 +526,7 @@ fn zswap(x: &mut [Complex<f64>], y: &mut [Complex<f64>]) {
     }
 }
 
-fn isamax(x: &[f32]) -> usize {
+pub fn isamax(x: &[f32]) -> usize {
     let mut max_idx = 0;
     for i in 1..x.len() {
         if x[i].abs() > x[max_idx].abs() {
@@ -536,7 +536,7 @@ fn isamax(x: &[f32]) -> usize {
     max_idx
 }
 
-fn idamax(x: &[f64]) -> usize {
+pub fn idamax(x: &[f64]) -> usize {
     let mut max_idx = 0;
     for i in 1..x.len() {
         if x[i].abs() > x[max_idx].abs() {
@@ -546,7 +546,7 @@ fn idamax(x: &[f64]) -> usize {
     max_idx
 }
 
-fn icamax(x: &[Complex<f32>]) -> usize {
+pub fn icamax(x: &[Complex<f32>]) -> usize {
     let mut max_idx = 0;
     for i in 1..x.len() {
         if (x[i].re.abs() + x[i].im.abs()) > (x[max_idx].re.abs() + x[max_idx].im.abs()) {
@@ -556,7 +556,7 @@ fn icamax(x: &[Complex<f32>]) -> usize {
     max_idx
 }
 
-fn izamax(x: &[Complex<f64>]) -> usize {
+pub fn izamax(x: &[Complex<f64>]) -> usize {
     let mut max_idx = 0;
     for i in 1..x.len() {
         if (x[i].re.abs() + x[i].im.abs()) > (x[max_idx].re.abs() + x[max_idx].im.abs()) {
@@ -566,7 +566,7 @@ fn izamax(x: &[Complex<f64>]) -> usize {
     max_idx
 }
 
-fn isamin(x: &[f32]) -> usize {
+pub fn isamin(x: &[f32]) -> usize {
     let mut min_idx = 0;
     for i in 1..x.len() {
         if x[i].abs() < x[min_idx].abs() {
@@ -576,7 +576,7 @@ fn isamin(x: &[f32]) -> usize {
     min_idx
 }
 
-fn idamin(x: &[f64]) -> usize {
+pub fn idamin(x: &[f64]) -> usize {
     let mut min_idx = 0;
     for i in 1..x.len() {
         if x[i].abs() < x[min_idx].abs() {
@@ -586,7 +586,7 @@ fn idamin(x: &[f64]) -> usize {
     min_idx
 }
 
-fn icamin(x: &[Complex<f32>]) -> usize {
+pub fn icamin(x: &[Complex<f32>]) -> usize {
     let mut min_idx = 0;
     for i in 1..x.len() {
         if (x[i].re.abs() + x[i].im.abs()) < (x[min_idx].re.abs() + x[min_idx].im.abs()) {
@@ -596,7 +596,7 @@ fn icamin(x: &[Complex<f32>]) -> usize {
     min_idx
 }
 
-fn izamin(x: &[Complex<f64>]) -> usize {
+pub fn izamin(x: &[Complex<f64>]) -> usize {
     let mut min_idx = 0;
     for i in 1..x.len() {
         if (x[i].re.abs() + x[i].im.abs()) < (x[min_idx].re.abs() + x[min_idx].im.abs()) {
