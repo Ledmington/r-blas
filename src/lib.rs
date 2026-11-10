@@ -449,8 +449,41 @@ fn drotmg(d1: &mut f64, d2: &mut f64, x1: &mut f64, y1: &f64, param: &mut [f64; 
     *d2 = 0.0f64;
     *x1 = 0.0f64;
 }
-fn scal() {
-    todo!()
+
+fn sscal(a: f32, x: &mut [f32]) {
+    for xi in x {
+        *xi *= a;
+    }
+}
+
+fn dscal(a: f64, x: &mut [f64]) {
+    for xi in x {
+        *xi *= a;
+    }
+}
+
+fn cscal(a: Complex<f32>, x: &mut [Complex<f32>]) {
+    for xi in x {
+        *xi *= a;
+    }
+}
+
+fn zscal(a: Complex<f64>, x: &mut [Complex<f64>]) {
+    for xi in x {
+        *xi *= a;
+    }
+}
+
+fn csscal(a: f32, x: &mut [Complex<f32>]) {
+    for xi in x {
+        *xi *= a;
+    }
+}
+
+fn zdscal(a: f64, x: &mut [Complex<f64>]) {
+    for xi in x {
+        *xi *= a;
+    }
 }
 
 fn swap() {
@@ -1767,5 +1800,247 @@ mod tests {
         assert_eq!(check_drotmg_with_drotm(1.0, 1.0, 1.0, 2.0), 1.0);
         assert_eq!(check_drotmg_with_drotm(2.0, 0.5, -3.0, 1.5), 0.0);
         assert_eq!(check_drotmg_with_drotm(0.5, 3.0, 1.0, -4.0), 1.0);
+    }
+
+    #[test]
+    fn test_sscal() {
+        let mut x: Vec<f32> = vec![1.0, -2.0, 3.5, 0.0];
+        sscal(2.5, &mut x);
+        assert_eq!(x, vec![2.5, -5.0, 8.75, 0.0]);
+    }
+
+    #[test]
+    fn test_sscal_negative() {
+        let mut x: Vec<f32> = vec![1.0, -2.0, 3.5];
+        sscal(-1.0, &mut x);
+        assert_eq!(x, vec![-1.0, 2.0, -3.5]);
+    }
+
+    #[test]
+    fn test_sscal_zero() {
+        let mut x: Vec<f32> = vec![1.0, -2.0, 3.5];
+        sscal(0.0, &mut x);
+        assert!(x.iter().all(|&xi| xi == 0.0));
+    }
+
+    #[test]
+    fn test_sscal_empty() {
+        let mut x: Vec<f32> = vec![];
+        sscal(2.0, &mut x);
+        assert!(x.is_empty());
+    }
+
+    #[test]
+    fn test_dscal() {
+        let mut x: Vec<f64> = vec![1.0, -2.0, 3.5, 0.0];
+        dscal(2.5, &mut x);
+        assert_eq!(x, vec![2.5, -5.0, 8.75, 0.0]);
+    }
+
+    #[test]
+    fn test_dscal_negative() {
+        let mut x: Vec<f64> = vec![1.0, -2.0, 3.5];
+        dscal(-1.0, &mut x);
+        assert_eq!(x, vec![-1.0, 2.0, -3.5]);
+    }
+
+    #[test]
+    fn test_dscal_zero() {
+        let mut x: Vec<f64> = vec![1.0, -2.0, 3.5];
+        dscal(0.0, &mut x);
+        assert!(x.iter().all(|&xi| xi == 0.0));
+    }
+
+    #[test]
+    fn test_dscal_empty() {
+        let mut x: Vec<f64> = vec![];
+        dscal(2.0, &mut x);
+        assert!(x.is_empty());
+    }
+
+    #[test]
+    fn test_cscal() {
+        let mut x: Vec<Complex<f32>> = vec![
+            Complex::new(1.0, 2.0),
+            Complex::new(0.0, -3.0),
+            Complex::new(4.0, 0.0),
+        ];
+        cscal(Complex::new(2.0, -1.0), &mut x);
+        assert_eq!(
+            x,
+            vec![
+                Complex::new(4.0, 3.0),
+                Complex::new(-3.0, -6.0),
+                Complex::new(8.0, -4.0)
+            ]
+        );
+    }
+
+    // Multiplying by i rotates each element by 90 degrees: (re, im) -> (-im, re).
+    #[test]
+    fn test_cscal_by_i() {
+        let mut x: Vec<Complex<f32>> = vec![
+            Complex::new(1.0, 2.0),
+            Complex::new(0.0, -3.0),
+            Complex::new(4.0, 0.0),
+        ];
+        cscal(Complex::new(0.0, 1.0), &mut x);
+        assert_eq!(
+            x,
+            vec![
+                Complex::new(-2.0, 1.0),
+                Complex::new(3.0, 0.0),
+                Complex::new(0.0, 4.0)
+            ]
+        );
+    }
+
+    #[test]
+    fn test_cscal_zero() {
+        let mut x: Vec<Complex<f32>> = vec![
+            Complex::new(1.0, 2.0),
+            Complex::new(0.0, -3.0),
+            Complex::new(4.0, 0.0),
+        ];
+        cscal(Complex::new(0.0, 0.0), &mut x);
+        assert!(x.iter().all(|xi| xi.re == 0.0 && xi.im == 0.0));
+    }
+
+    #[test]
+    fn test_cscal_empty() {
+        let mut x: Vec<Complex<f32>> = vec![];
+        cscal(Complex::new(2.0, 1.0), &mut x);
+        assert!(x.is_empty());
+    }
+
+    #[test]
+    fn test_zscal() {
+        let mut x: Vec<Complex<f64>> = vec![
+            Complex::new(1.0, 2.0),
+            Complex::new(0.0, -3.0),
+            Complex::new(4.0, 0.0),
+        ];
+        zscal(Complex::new(2.0, -1.0), &mut x);
+        assert_eq!(
+            x,
+            vec![
+                Complex::new(4.0, 3.0),
+                Complex::new(-3.0, -6.0),
+                Complex::new(8.0, -4.0)
+            ]
+        );
+    }
+
+    // Multiplying by i rotates each element by 90 degrees: (re, im) -> (-im, re).
+    #[test]
+    fn test_zscal_by_i() {
+        let mut x: Vec<Complex<f64>> = vec![
+            Complex::new(1.0, 2.0),
+            Complex::new(0.0, -3.0),
+            Complex::new(4.0, 0.0),
+        ];
+        zscal(Complex::new(0.0, 1.0), &mut x);
+        assert_eq!(
+            x,
+            vec![
+                Complex::new(-2.0, 1.0),
+                Complex::new(3.0, 0.0),
+                Complex::new(0.0, 4.0)
+            ]
+        );
+    }
+
+    #[test]
+    fn test_zscal_zero() {
+        let mut x: Vec<Complex<f64>> = vec![
+            Complex::new(1.0, 2.0),
+            Complex::new(0.0, -3.0),
+            Complex::new(4.0, 0.0),
+        ];
+        zscal(Complex::new(0.0, 0.0), &mut x);
+        assert!(x.iter().all(|xi| xi.re == 0.0 && xi.im == 0.0));
+    }
+
+    #[test]
+    fn test_zscal_empty() {
+        let mut x: Vec<Complex<f64>> = vec![];
+        zscal(Complex::new(2.0, 1.0), &mut x);
+        assert!(x.is_empty());
+    }
+
+    #[test]
+    fn test_csscal() {
+        let mut x: Vec<Complex<f32>> = vec![
+            Complex::new(1.0, 2.0),
+            Complex::new(0.0, -3.0),
+            Complex::new(4.0, 0.0),
+        ];
+        csscal(2.5, &mut x);
+        assert_eq!(
+            x,
+            vec![
+                Complex::new(2.5, 5.0),
+                Complex::new(0.0, -7.5),
+                Complex::new(10.0, 0.0)
+            ]
+        );
+    }
+
+    #[test]
+    fn test_csscal_matches_cscal_with_real_a() {
+        let mut x1: Vec<Complex<f32>> = vec![
+            Complex::new(1.0, 2.0),
+            Complex::new(0.0, -3.0),
+            Complex::new(4.0, 0.0),
+        ];
+        let mut x2 = x1.clone();
+        csscal(-1.5, &mut x1);
+        cscal(Complex::new(-1.5, 0.0), &mut x2);
+        assert_eq!(x1, x2);
+    }
+
+    #[test]
+    fn test_csscal_empty() {
+        let mut x: Vec<Complex<f32>> = vec![];
+        csscal(2.0, &mut x);
+        assert!(x.is_empty());
+    }
+
+    #[test]
+    fn test_zdscal() {
+        let mut x: Vec<Complex<f64>> = vec![
+            Complex::new(1.0, 2.0),
+            Complex::new(0.0, -3.0),
+            Complex::new(4.0, 0.0),
+        ];
+        zdscal(2.5, &mut x);
+        assert_eq!(
+            x,
+            vec![
+                Complex::new(2.5, 5.0),
+                Complex::new(0.0, -7.5),
+                Complex::new(10.0, 0.0)
+            ]
+        );
+    }
+
+    #[test]
+    fn test_zdscal_matches_zscal_with_real_a() {
+        let mut x1: Vec<Complex<f64>> = vec![
+            Complex::new(1.0, 2.0),
+            Complex::new(0.0, -3.0),
+            Complex::new(4.0, 0.0),
+        ];
+        let mut x2 = x1.clone();
+        zdscal(-1.5, &mut x1);
+        zscal(Complex::new(-1.5, 0.0), &mut x2);
+        assert_eq!(x1, x2);
+    }
+
+    #[test]
+    fn test_zdscal_empty() {
+        let mut x: Vec<Complex<f64>> = vec![];
+        zdscal(2.0, &mut x);
+        assert!(x.is_empty());
     }
 }
