@@ -228,8 +228,90 @@ fn zrot(x: &mut [Complex<f64>], y: &mut [Complex<f64>], c: f64, s: Complex<f64>)
     }
 }
 
-fn rotg() {
-    todo!()
+fn srotg(a: &mut f32, b: &mut f32, c: &mut f32, s: &mut f32) {
+    let roe = if a.abs() > b.abs() { *a } else { *b };
+    let scale = a.abs() + b.abs();
+    if scale == 0.0f32 {
+        *c = 1.0f32;
+        *s = 0.0f32;
+        *a = 0.0f32;
+        *b = 0.0f32;
+        return;
+    }
+
+    let r = (scale * ((*a / scale).powi(2) + (*b / scale).powi(2)).sqrt()).copysign(roe);
+    *c = *a / r;
+    *s = *b / r;
+    let z = if a.abs() > b.abs() {
+        *s
+    } else if *c != 0.0f32 {
+        1.0f32 / *c
+    } else {
+        1.0f32
+    };
+
+    *a = r;
+    *b = z;
+}
+
+fn drotg(a: &mut f64, b: &mut f64, c: &mut f64, s: &mut f64) {
+    let roe = if a.abs() > b.abs() { *a } else { *b };
+    let scale = a.abs() + b.abs();
+    if scale == 0.0f64 {
+        *c = 1.0f64;
+        *s = 0.0f64;
+        *a = 0.0f64;
+        *b = 0.0f64;
+        return;
+    }
+
+    let r = (scale * ((*a / scale).powi(2) + (*b / scale).powi(2)).sqrt()).copysign(roe);
+    *c = *a / r;
+    *s = *b / r;
+    let z = if a.abs() > b.abs() {
+        *s
+    } else if *c != 0.0f64 {
+        1.0f64 / *c
+    } else {
+        1.0f64
+    };
+
+    *a = r;
+    *b = z;
+}
+
+fn crotg(a: &mut Complex<f32>, b: &Complex<f32>, c: &mut f32, s: &mut Complex<f32>) {
+    let abs_a = a.norm();
+    if abs_a == 0.0f32 {
+        *c = 0.0f32;
+        *s = Complex::new(1.0f32, 0.0f32);
+        *a = *b;
+        return;
+    }
+
+    let scale = abs_a + b.norm();
+    let d = scale * ((*a / scale).norm_sqr() + (*b / scale).norm_sqr()).sqrt();
+    let alpha = *a / abs_a;
+    *c = abs_a / d;
+    *s = alpha * b.conj() / d;
+    *a = alpha * d;
+}
+
+fn zrotg(a: &mut Complex<f64>, b: &Complex<f64>, c: &mut f64, s: &mut Complex<f64>) {
+    let abs_a = a.norm();
+    if abs_a == 0.0f64 {
+        *c = 0.0f64;
+        *s = Complex::new(1.0f64, 0.0f64);
+        *a = *b;
+        return;
+    }
+
+    let scale = abs_a + b.norm();
+    let d = scale * ((*a / scale).norm_sqr() + (*b / scale).norm_sqr()).sqrt();
+    let alpha = *a / abs_a;
+    *c = abs_a / d;
+    *s = alpha * b.conj() / d;
+    *a = alpha * d;
 }
 
 fn rotm() {
@@ -1031,5 +1113,239 @@ mod tests {
         let mut x: Vec<Complex<f64>> = vec![Complex::new(1.0, 0.0); 3];
         let mut y: Vec<Complex<f64>> = vec![Complex::new(1.0, 0.0); 2];
         zrot(&mut x, &mut y, 1.0, Complex::new(0.0, 0.0));
+    }
+
+    // BLAS rotg: from (a, b) compute c, s, r with [c s; -s c] [a; b] = [r; 0].
+    // r takes the sign of whichever of a, b has the larger magnitude.
+    // On exit a holds r and b holds z (s if |a| > |b|, else 1/c, or 1 if c == 0).
+    #[test]
+    fn test_srotg_a_smaller() {
+        let (mut a, mut b, mut c, mut s): (f32, f32, f32, f32) = (3.0, 4.0, 0.0, 0.0);
+        srotg(&mut a, &mut b, &mut c, &mut s);
+        // [r, z, c, s]
+        assert_close_f32(&[a, b, c, s], &[5.0, 1.0 / 0.6, 0.6, 0.8]);
+    }
+
+    #[test]
+    fn test_srotg_a_larger() {
+        let (mut a, mut b, mut c, mut s): (f32, f32, f32, f32) = (4.0, 3.0, 0.0, 0.0);
+        srotg(&mut a, &mut b, &mut c, &mut s);
+        // [r, z, c, s]
+        assert_close_f32(&[a, b, c, s], &[5.0, 0.6, 0.8, 0.6]);
+    }
+
+    #[test]
+    fn test_srotg_negative_a_dominant() {
+        let (mut a, mut b, mut c, mut s): (f32, f32, f32, f32) = (-4.0, 3.0, 0.0, 0.0);
+        srotg(&mut a, &mut b, &mut c, &mut s);
+        // [r, z, c, s]
+        assert_close_f32(&[a, b, c, s], &[-5.0, -0.6, 0.8, -0.6]);
+    }
+
+    #[test]
+    fn test_srotg_negative_b_dominant() {
+        let (mut a, mut b, mut c, mut s): (f32, f32, f32, f32) = (3.0, -4.0, 0.0, 0.0);
+        srotg(&mut a, &mut b, &mut c, &mut s);
+        // [r, z, c, s]
+        assert_close_f32(&[a, b, c, s], &[-5.0, -1.0 / 0.6, -0.6, 0.8]);
+    }
+
+    #[test]
+    fn test_srotg_a_zero() {
+        let (mut a, mut b, mut c, mut s): (f32, f32, f32, f32) = (0.0, 5.0, 0.0, 0.0);
+        srotg(&mut a, &mut b, &mut c, &mut s);
+        // [r, z, c, s]
+        assert_close_f32(&[a, b, c, s], &[5.0, 1.0, 0.0, 1.0]);
+    }
+
+    #[test]
+    fn test_srotg_both_zero() {
+        let (mut a, mut b, mut c, mut s): (f32, f32, f32, f32) = (0.0, 0.0, 0.0, 0.0);
+        srotg(&mut a, &mut b, &mut c, &mut s);
+        // [r, z, c, s]
+        assert_close_f32(&[a, b, c, s], &[0.0, 0.0, 1.0, 0.0]);
+    }
+
+    #[test]
+    fn test_srotg_then_srot_zeroes_b() {
+        let (a0, b0): (f32, f32) = (1.5, -2.0);
+        let (mut a, mut b, mut c, mut s) = (a0, b0, 0.0, 0.0);
+        srotg(&mut a, &mut b, &mut c, &mut s);
+        let mut x = vec![a0];
+        let mut y = vec![b0];
+        srot(&mut x, &mut y, c, s);
+        assert_close_f32(&x, &[a]);
+        assert_close_f32(&y, &[0.0]);
+    }
+
+    #[test]
+    fn test_drotg_a_smaller() {
+        let (mut a, mut b, mut c, mut s): (f64, f64, f64, f64) = (3.0, 4.0, 0.0, 0.0);
+        drotg(&mut a, &mut b, &mut c, &mut s);
+        // [r, z, c, s]
+        assert_close_f64(&[a, b, c, s], &[5.0, 1.0 / 0.6, 0.6, 0.8]);
+    }
+
+    #[test]
+    fn test_drotg_a_larger() {
+        let (mut a, mut b, mut c, mut s): (f64, f64, f64, f64) = (4.0, 3.0, 0.0, 0.0);
+        drotg(&mut a, &mut b, &mut c, &mut s);
+        // [r, z, c, s]
+        assert_close_f64(&[a, b, c, s], &[5.0, 0.6, 0.8, 0.6]);
+    }
+
+    #[test]
+    fn test_drotg_negative_a_dominant() {
+        let (mut a, mut b, mut c, mut s): (f64, f64, f64, f64) = (-4.0, 3.0, 0.0, 0.0);
+        drotg(&mut a, &mut b, &mut c, &mut s);
+        // [r, z, c, s]
+        assert_close_f64(&[a, b, c, s], &[-5.0, -0.6, 0.8, -0.6]);
+    }
+
+    #[test]
+    fn test_drotg_negative_b_dominant() {
+        let (mut a, mut b, mut c, mut s): (f64, f64, f64, f64) = (3.0, -4.0, 0.0, 0.0);
+        drotg(&mut a, &mut b, &mut c, &mut s);
+        // [r, z, c, s]
+        assert_close_f64(&[a, b, c, s], &[-5.0, -1.0 / 0.6, -0.6, 0.8]);
+    }
+
+    #[test]
+    fn test_drotg_a_zero() {
+        let (mut a, mut b, mut c, mut s): (f64, f64, f64, f64) = (0.0, 5.0, 0.0, 0.0);
+        drotg(&mut a, &mut b, &mut c, &mut s);
+        // [r, z, c, s]
+        assert_close_f64(&[a, b, c, s], &[5.0, 1.0, 0.0, 1.0]);
+    }
+
+    #[test]
+    fn test_drotg_both_zero() {
+        let (mut a, mut b, mut c, mut s): (f64, f64, f64, f64) = (0.0, 0.0, 0.0, 0.0);
+        drotg(&mut a, &mut b, &mut c, &mut s);
+        // [r, z, c, s]
+        assert_close_f64(&[a, b, c, s], &[0.0, 0.0, 1.0, 0.0]);
+    }
+
+    #[test]
+    fn test_drotg_then_drot_zeroes_b() {
+        let (a0, b0): (f64, f64) = (1.5, -2.0);
+        let (mut a, mut b, mut c, mut s) = (a0, b0, 0.0, 0.0);
+        drotg(&mut a, &mut b, &mut c, &mut s);
+        let mut x = vec![a0];
+        let mut y = vec![b0];
+        drot(&mut x, &mut y, c, s);
+        assert_close_f64(&x, &[a]);
+        assert_close_f64(&y, &[0.0]);
+    }
+
+    // Complex rotg: c real, [c s; -conj(s) c] [a; b] = [r; 0], with
+    // r = (a / |a|) * sqrt(|a|^2 + |b|^2). On exit a holds r, b is unchanged.
+    // If a == 0: c = 0, s = 1, r = b.
+    #[test]
+    fn test_crotg_imaginary_a() {
+        let mut a: Complex<f32> = Complex::new(0.0, 3.0);
+        let b: Complex<f32> = Complex::new(4.0, 0.0);
+        let mut c: f32 = 0.0;
+        let mut s: Complex<f32> = Complex::new(0.0, 0.0);
+        crotg(&mut a, &b, &mut c, &mut s);
+        assert_close_c32(&[a], &[Complex::new(0.0, 5.0)]);
+        assert_close_f32(&[c], &[0.6]);
+        assert_close_c32(&[s], &[Complex::new(0.0, 0.8)]);
+        assert_eq!(b, Complex::new(4.0, 0.0));
+    }
+
+    #[test]
+    fn test_crotg_imaginary_b() {
+        let mut a: Complex<f32> = Complex::new(3.0, 0.0);
+        let b: Complex<f32> = Complex::new(0.0, 4.0);
+        let mut c: f32 = 0.0;
+        let mut s: Complex<f32> = Complex::new(0.0, 0.0);
+        crotg(&mut a, &b, &mut c, &mut s);
+        assert_close_c32(&[a], &[Complex::new(5.0, 0.0)]);
+        assert_close_f32(&[c], &[0.6]);
+        assert_close_c32(&[s], &[Complex::new(0.0, -0.8)]);
+        assert_eq!(b, Complex::new(0.0, 4.0));
+    }
+
+    #[test]
+    fn test_crotg_a_zero() {
+        let mut a: Complex<f32> = Complex::new(0.0, 0.0);
+        let b: Complex<f32> = Complex::new(2.0, 1.0);
+        let mut c: f32 = 0.0;
+        let mut s: Complex<f32> = Complex::new(0.0, 0.0);
+        crotg(&mut a, &b, &mut c, &mut s);
+        assert_close_c32(&[a], &[Complex::new(2.0, 1.0)]);
+        assert_close_f32(&[c], &[0.0]);
+        assert_close_c32(&[s], &[Complex::new(1.0, 0.0)]);
+        assert_eq!(b, Complex::new(2.0, 1.0));
+    }
+
+    #[test]
+    fn test_crotg_then_crot_zeroes_b() {
+        let a0: Complex<f32> = Complex::new(1.0, 2.0);
+        let b0: Complex<f32> = Complex::new(-2.0, 0.5);
+        let mut a = a0;
+        let mut c: f32 = 0.0;
+        let mut s: Complex<f32> = Complex::new(0.0, 0.0);
+        crotg(&mut a, &b0, &mut c, &mut s);
+        let mut x = vec![a0];
+        let mut y = vec![b0];
+        crot(&mut x, &mut y, c, s);
+        assert_close_c32(&x, &[a]);
+        assert_close_c32(&y, &[Complex::new(0.0, 0.0)]);
+    }
+
+    #[test]
+    fn test_zrotg_imaginary_a() {
+        let mut a: Complex<f64> = Complex::new(0.0, 3.0);
+        let b: Complex<f64> = Complex::new(4.0, 0.0);
+        let mut c: f64 = 0.0;
+        let mut s: Complex<f64> = Complex::new(0.0, 0.0);
+        zrotg(&mut a, &b, &mut c, &mut s);
+        assert_close_c64(&[a], &[Complex::new(0.0, 5.0)]);
+        assert_close_f64(&[c], &[0.6]);
+        assert_close_c64(&[s], &[Complex::new(0.0, 0.8)]);
+        assert_eq!(b, Complex::new(4.0, 0.0));
+    }
+
+    #[test]
+    fn test_zrotg_imaginary_b() {
+        let mut a: Complex<f64> = Complex::new(3.0, 0.0);
+        let b: Complex<f64> = Complex::new(0.0, 4.0);
+        let mut c: f64 = 0.0;
+        let mut s: Complex<f64> = Complex::new(0.0, 0.0);
+        zrotg(&mut a, &b, &mut c, &mut s);
+        assert_close_c64(&[a], &[Complex::new(5.0, 0.0)]);
+        assert_close_f64(&[c], &[0.6]);
+        assert_close_c64(&[s], &[Complex::new(0.0, -0.8)]);
+        assert_eq!(b, Complex::new(0.0, 4.0));
+    }
+
+    #[test]
+    fn test_zrotg_a_zero() {
+        let mut a: Complex<f64> = Complex::new(0.0, 0.0);
+        let b: Complex<f64> = Complex::new(2.0, 1.0);
+        let mut c: f64 = 0.0;
+        let mut s: Complex<f64> = Complex::new(0.0, 0.0);
+        zrotg(&mut a, &b, &mut c, &mut s);
+        assert_close_c64(&[a], &[Complex::new(2.0, 1.0)]);
+        assert_close_f64(&[c], &[0.0]);
+        assert_close_c64(&[s], &[Complex::new(1.0, 0.0)]);
+        assert_eq!(b, Complex::new(2.0, 1.0));
+    }
+
+    #[test]
+    fn test_zrotg_then_zrot_zeroes_b() {
+        let a0: Complex<f64> = Complex::new(1.0, 2.0);
+        let b0: Complex<f64> = Complex::new(-2.0, 0.5);
+        let mut a = a0;
+        let mut c: f64 = 0.0;
+        let mut s: Complex<f64> = Complex::new(0.0, 0.0);
+        zrotg(&mut a, &b0, &mut c, &mut s);
+        let mut x = vec![a0];
+        let mut y = vec![b0];
+        zrot(&mut x, &mut y, c, s);
+        assert_close_c64(&x, &[a]);
+        assert_close_c64(&y, &[Complex::new(0.0, 0.0)]);
     }
 }
