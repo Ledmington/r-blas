@@ -168,8 +168,64 @@ fn dznrm2(x: &[Complex<f64>]) -> f64 {
     s.sqrt()
 }
 
-fn rot() {
-    todo!()
+fn srot(x: &mut [f32], y: &mut [f32], c: f32, s: f32) {
+    assert!(x.len() == y.len());
+    for i in 0..x.len() {
+        let xi = x[i];
+        let yi = y[i];
+        x[i] = c * xi + s * yi;
+        y[i] = c * yi - s * xi;
+    }
+}
+
+fn drot(x: &mut [f64], y: &mut [f64], c: f64, s: f64) {
+    assert!(x.len() == y.len());
+    for i in 0..x.len() {
+        let xi = x[i];
+        let yi = y[i];
+        x[i] = c * xi + s * yi;
+        y[i] = c * yi - s * xi;
+    }
+}
+
+fn csrot(x: &mut [Complex<f32>], y: &mut [Complex<f32>], c: f32, s: f32) {
+    assert!(x.len() == y.len());
+    for i in 0..x.len() {
+        let xi = x[i];
+        let yi = y[i];
+        x[i] = c * xi + s * yi;
+        y[i] = c * yi - s * xi;
+    }
+}
+
+fn zdrot(x: &mut [Complex<f64>], y: &mut [Complex<f64>], c: f64, s: f64) {
+    assert!(x.len() == y.len());
+    for i in 0..x.len() {
+        let xi = x[i];
+        let yi = y[i];
+        x[i] = c * xi + s * yi;
+        y[i] = c * yi - s * xi;
+    }
+}
+
+fn crot(x: &mut [Complex<f32>], y: &mut [Complex<f32>], c: f32, s: Complex<f32>) {
+    assert!(x.len() == y.len());
+    for i in 0..x.len() {
+        let xi = x[i];
+        let yi = y[i];
+        x[i] = c * xi + s * yi;
+        y[i] = c * yi - s.conj() * xi;
+    }
+}
+
+fn zrot(x: &mut [Complex<f64>], y: &mut [Complex<f64>], c: f64, s: Complex<f64>) {
+    assert!(x.len() == y.len());
+    for i in 0..x.len() {
+        let xi = x[i];
+        let yi = y[i];
+        x[i] = c * xi + s * yi;
+        y[i] = c * yi - s.conj() * xi;
+    }
 }
 
 fn rotg() {
@@ -708,5 +764,272 @@ mod tests {
     fn test_dznrm2_empty() {
         let x: Vec<Complex<f64>> = vec![];
         assert_eq!(dznrm2(&x), 0.0);
+    }
+
+    // Element-wise comparison with a tolerance, for results that are not exact in floating point.
+    fn assert_close_f32(a: &[f32], b: &[f32]) {
+        assert_eq!(a.len(), b.len());
+        for (ai, bi) in a.iter().zip(b) {
+            assert!((ai - bi).abs() < 1e-6, "{a:?} != {b:?}");
+        }
+    }
+
+    fn assert_close_f64(a: &[f64], b: &[f64]) {
+        assert_eq!(a.len(), b.len());
+        for (ai, bi) in a.iter().zip(b) {
+            assert!((ai - bi).abs() < 1e-12, "{a:?} != {b:?}");
+        }
+    }
+
+    fn assert_close_c32(a: &[Complex<f32>], b: &[Complex<f32>]) {
+        assert_eq!(a.len(), b.len());
+        for (ai, bi) in a.iter().zip(b) {
+            assert!((ai - bi).norm() < 1e-6, "{a:?} != {b:?}");
+        }
+    }
+
+    fn assert_close_c64(a: &[Complex<f64>], b: &[Complex<f64>]) {
+        assert_eq!(a.len(), b.len());
+        for (ai, bi) in a.iter().zip(b) {
+            assert!((ai - bi).norm() < 1e-12, "{a:?} != {b:?}");
+        }
+    }
+
+    // BLAS defines rot as: x' = c*x + s*y, y' = c*y - s*x.
+    #[test]
+    fn test_srot() {
+        let mut x: Vec<f32> = vec![1.0, 2.0];
+        let mut y: Vec<f32> = vec![3.0, -1.0];
+        srot(&mut x, &mut y, 0.6, 0.8);
+        assert_close_f32(&x, &[3.0, 0.4]);
+        assert_close_f32(&y, &[1.0, -2.2]);
+    }
+
+    #[test]
+    fn test_srot_identity() {
+        let mut x: Vec<f32> = vec![1.0, -2.0, 3.5];
+        let mut y: Vec<f32> = vec![4.0, 5.0, -6.5];
+        srot(&mut x, &mut y, 1.0, 0.0);
+        assert_eq!(x, vec![1.0, -2.0, 3.5]);
+        assert_eq!(y, vec![4.0, 5.0, -6.5]);
+    }
+
+    #[test]
+    fn test_srot_quarter_turn() {
+        let mut x: Vec<f32> = vec![1.0, -2.0, 3.5];
+        let mut y: Vec<f32> = vec![4.0, 5.0, -6.5];
+        srot(&mut x, &mut y, 0.0, 1.0);
+        assert_eq!(x, vec![4.0, 5.0, -6.5]);
+        assert_eq!(y, vec![-1.0, 2.0, -3.5]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_srot_length_mismatch() {
+        let mut x: Vec<f32> = vec![1.0, 2.0, 3.0];
+        let mut y: Vec<f32> = vec![1.0, 2.0];
+        srot(&mut x, &mut y, 1.0, 0.0);
+    }
+
+    #[test]
+    fn test_drot() {
+        let mut x: Vec<f64> = vec![1.0, 2.0];
+        let mut y: Vec<f64> = vec![3.0, -1.0];
+        drot(&mut x, &mut y, 0.6, 0.8);
+        assert_close_f64(&x, &[3.0, 0.4]);
+        assert_close_f64(&y, &[1.0, -2.2]);
+    }
+
+    #[test]
+    fn test_drot_identity() {
+        let mut x: Vec<f64> = vec![1.0, -2.0, 3.5];
+        let mut y: Vec<f64> = vec![4.0, 5.0, -6.5];
+        drot(&mut x, &mut y, 1.0, 0.0);
+        assert_eq!(x, vec![1.0, -2.0, 3.5]);
+        assert_eq!(y, vec![4.0, 5.0, -6.5]);
+    }
+
+    #[test]
+    fn test_drot_quarter_turn() {
+        let mut x: Vec<f64> = vec![1.0, -2.0, 3.5];
+        let mut y: Vec<f64> = vec![4.0, 5.0, -6.5];
+        drot(&mut x, &mut y, 0.0, 1.0);
+        assert_eq!(x, vec![4.0, 5.0, -6.5]);
+        assert_eq!(y, vec![-1.0, 2.0, -3.5]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_drot_length_mismatch() {
+        let mut x: Vec<f64> = vec![1.0, 2.0, 3.0];
+        let mut y: Vec<f64> = vec![1.0, 2.0];
+        drot(&mut x, &mut y, 1.0, 0.0);
+    }
+
+    #[test]
+    fn test_csrot() {
+        let mut x: Vec<Complex<f32>> = vec![Complex::new(1.0, 2.0)];
+        let mut y: Vec<Complex<f32>> = vec![Complex::new(3.0, -1.0)];
+        csrot(&mut x, &mut y, 0.6, 0.8);
+        assert_close_c32(&x, &[Complex::new(3.0, 0.4)]);
+        assert_close_c32(&y, &[Complex::new(1.0, -2.2)]);
+    }
+
+    #[test]
+    fn test_csrot_identity() {
+        let mut x: Vec<Complex<f32>> = vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)];
+        let mut y: Vec<Complex<f32>> = vec![Complex::new(4.0, -1.0), Complex::new(2.0, 2.0)];
+        csrot(&mut x, &mut y, 1.0, 0.0);
+        assert_eq!(x, vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)]);
+        assert_eq!(y, vec![Complex::new(4.0, -1.0), Complex::new(2.0, 2.0)]);
+    }
+
+    #[test]
+    fn test_csrot_quarter_turn() {
+        let mut x: Vec<Complex<f32>> = vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)];
+        let mut y: Vec<Complex<f32>> = vec![Complex::new(4.0, -1.0), Complex::new(2.0, 2.0)];
+        csrot(&mut x, &mut y, 0.0, 1.0);
+        assert_eq!(x, vec![Complex::new(4.0, -1.0), Complex::new(2.0, 2.0)]);
+        assert_eq!(y, vec![Complex::new(-1.0, -2.0), Complex::new(0.0, 3.0)]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_csrot_length_mismatch() {
+        let mut x: Vec<Complex<f32>> = vec![Complex::new(1.0, 0.0); 3];
+        let mut y: Vec<Complex<f32>> = vec![Complex::new(1.0, 0.0); 2];
+        csrot(&mut x, &mut y, 1.0, 0.0);
+    }
+
+    #[test]
+    fn test_zdrot() {
+        let mut x: Vec<Complex<f64>> = vec![Complex::new(1.0, 2.0)];
+        let mut y: Vec<Complex<f64>> = vec![Complex::new(3.0, -1.0)];
+        zdrot(&mut x, &mut y, 0.6, 0.8);
+        assert_close_c64(&x, &[Complex::new(3.0, 0.4)]);
+        assert_close_c64(&y, &[Complex::new(1.0, -2.2)]);
+    }
+
+    #[test]
+    fn test_zdrot_identity() {
+        let mut x: Vec<Complex<f64>> = vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)];
+        let mut y: Vec<Complex<f64>> = vec![Complex::new(4.0, -1.0), Complex::new(2.0, 2.0)];
+        zdrot(&mut x, &mut y, 1.0, 0.0);
+        assert_eq!(x, vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)]);
+        assert_eq!(y, vec![Complex::new(4.0, -1.0), Complex::new(2.0, 2.0)]);
+    }
+
+    #[test]
+    fn test_zdrot_quarter_turn() {
+        let mut x: Vec<Complex<f64>> = vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)];
+        let mut y: Vec<Complex<f64>> = vec![Complex::new(4.0, -1.0), Complex::new(2.0, 2.0)];
+        zdrot(&mut x, &mut y, 0.0, 1.0);
+        assert_eq!(x, vec![Complex::new(4.0, -1.0), Complex::new(2.0, 2.0)]);
+        assert_eq!(y, vec![Complex::new(-1.0, -2.0), Complex::new(0.0, 3.0)]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_zdrot_length_mismatch() {
+        let mut x: Vec<Complex<f64>> = vec![Complex::new(1.0, 0.0); 3];
+        let mut y: Vec<Complex<f64>> = vec![Complex::new(1.0, 0.0); 2];
+        zdrot(&mut x, &mut y, 1.0, 0.0);
+    }
+
+    // LAPACK defines crot/zrot (real c, complex s) as: x' = c*x + s*y, y' = c*y - conj(s)*x.
+    #[test]
+    fn test_crot() {
+        let mut x: Vec<Complex<f32>> = vec![Complex::new(1.0, 2.0)];
+        let mut y: Vec<Complex<f32>> = vec![Complex::new(3.0, -1.0)];
+        crot(&mut x, &mut y, 0.6, Complex::new(0.0, 0.8));
+        assert_close_c32(&x, &[Complex::new(1.4, 3.6)]);
+        assert_close_c32(&y, &[Complex::new(0.2, 0.2)]);
+    }
+
+    // With a purely imaginary s, conj(s) = -s: a missing conj() flips the sign of y.
+    #[test]
+    fn test_crot_imaginary_s() {
+        let mut x: Vec<Complex<f32>> = vec![Complex::new(1.0, 2.0)];
+        let mut y: Vec<Complex<f32>> = vec![Complex::new(3.0, -1.0)];
+        crot(&mut x, &mut y, 0.0, Complex::new(0.0, 1.0));
+        assert_eq!(x, vec![Complex::new(1.0, 3.0)]);
+        assert_eq!(y, vec![Complex::new(-2.0, 1.0)]);
+    }
+
+    #[test]
+    fn test_crot_identity() {
+        let mut x: Vec<Complex<f32>> = vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)];
+        let mut y: Vec<Complex<f32>> = vec![Complex::new(4.0, -1.0), Complex::new(2.0, 2.0)];
+        crot(&mut x, &mut y, 1.0, Complex::new(0.0, 0.0));
+        assert_eq!(x, vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)]);
+        assert_eq!(y, vec![Complex::new(4.0, -1.0), Complex::new(2.0, 2.0)]);
+    }
+
+    #[test]
+    fn test_crot_real_s_matches_csrot() {
+        let x0: Vec<Complex<f32>> = vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)];
+        let y0: Vec<Complex<f32>> = vec![Complex::new(4.0, -1.0), Complex::new(2.0, 2.0)];
+        let (mut x1, mut y1) = (x0.clone(), y0.clone());
+        let (mut x2, mut y2) = (x0.clone(), y0.clone());
+        crot(&mut x1, &mut y1, 0.6, Complex::new(0.8, 0.0));
+        csrot(&mut x2, &mut y2, 0.6, 0.8);
+        assert_eq!(x1, x2);
+        assert_eq!(y1, y2);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_crot_length_mismatch() {
+        let mut x: Vec<Complex<f32>> = vec![Complex::new(1.0, 0.0); 3];
+        let mut y: Vec<Complex<f32>> = vec![Complex::new(1.0, 0.0); 2];
+        crot(&mut x, &mut y, 1.0, Complex::new(0.0, 0.0));
+    }
+
+    #[test]
+    fn test_zrot() {
+        let mut x: Vec<Complex<f64>> = vec![Complex::new(1.0, 2.0)];
+        let mut y: Vec<Complex<f64>> = vec![Complex::new(3.0, -1.0)];
+        zrot(&mut x, &mut y, 0.6, Complex::new(0.0, 0.8));
+        assert_close_c64(&x, &[Complex::new(1.4, 3.6)]);
+        assert_close_c64(&y, &[Complex::new(0.2, 0.2)]);
+    }
+
+    // With a purely imaginary s, conj(s) = -s: a missing conj() flips the sign of y.
+    #[test]
+    fn test_zrot_imaginary_s() {
+        let mut x: Vec<Complex<f64>> = vec![Complex::new(1.0, 2.0)];
+        let mut y: Vec<Complex<f64>> = vec![Complex::new(3.0, -1.0)];
+        zrot(&mut x, &mut y, 0.0, Complex::new(0.0, 1.0));
+        assert_eq!(x, vec![Complex::new(1.0, 3.0)]);
+        assert_eq!(y, vec![Complex::new(-2.0, 1.0)]);
+    }
+
+    #[test]
+    fn test_zrot_identity() {
+        let mut x: Vec<Complex<f64>> = vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)];
+        let mut y: Vec<Complex<f64>> = vec![Complex::new(4.0, -1.0), Complex::new(2.0, 2.0)];
+        zrot(&mut x, &mut y, 1.0, Complex::new(0.0, 0.0));
+        assert_eq!(x, vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)]);
+        assert_eq!(y, vec![Complex::new(4.0, -1.0), Complex::new(2.0, 2.0)]);
+    }
+
+    #[test]
+    fn test_zrot_real_s_matches_zdrot() {
+        let x0: Vec<Complex<f64>> = vec![Complex::new(1.0, 2.0), Complex::new(0.0, -3.0)];
+        let y0: Vec<Complex<f64>> = vec![Complex::new(4.0, -1.0), Complex::new(2.0, 2.0)];
+        let (mut x1, mut y1) = (x0.clone(), y0.clone());
+        let (mut x2, mut y2) = (x0.clone(), y0.clone());
+        zrot(&mut x1, &mut y1, 0.6, Complex::new(0.8, 0.0));
+        zdrot(&mut x2, &mut y2, 0.6, 0.8);
+        assert_eq!(x1, x2);
+        assert_eq!(y1, y2);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_zrot_length_mismatch() {
+        let mut x: Vec<Complex<f64>> = vec![Complex::new(1.0, 0.0); 3];
+        let mut y: Vec<Complex<f64>> = vec![Complex::new(1.0, 0.0); 2];
+        zrot(&mut x, &mut y, 1.0, Complex::new(0.0, 0.0));
     }
 }
