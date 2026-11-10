@@ -526,12 +526,84 @@ fn zswap(x: &mut [Complex<f64>], y: &mut [Complex<f64>]) {
     }
 }
 
-fn iamax() {
-    todo!()
+fn isamax(x: &[f32]) -> usize {
+    let mut max_idx = 0;
+    for i in 1..x.len() {
+        if x[i].abs() > x[max_idx].abs() {
+            max_idx = i;
+        }
+    }
+    max_idx
 }
 
-fn iamin() {
-    todo!()
+fn idamax(x: &[f64]) -> usize {
+    let mut max_idx = 0;
+    for i in 1..x.len() {
+        if x[i].abs() > x[max_idx].abs() {
+            max_idx = i;
+        }
+    }
+    max_idx
+}
+
+fn icamax(x: &[Complex<f32>]) -> usize {
+    let mut max_idx = 0;
+    for i in 1..x.len() {
+        if (x[i].re.abs() + x[i].im.abs()) > (x[max_idx].re.abs() + x[max_idx].im.abs()) {
+            max_idx = i;
+        }
+    }
+    max_idx
+}
+
+fn izamax(x: &[Complex<f64>]) -> usize {
+    let mut max_idx = 0;
+    for i in 1..x.len() {
+        if (x[i].re.abs() + x[i].im.abs()) > (x[max_idx].re.abs() + x[max_idx].im.abs()) {
+            max_idx = i;
+        }
+    }
+    max_idx
+}
+
+fn isamin(x: &[f32]) -> usize {
+    let mut min_idx = 0;
+    for i in 1..x.len() {
+        if x[i].abs() < x[min_idx].abs() {
+            min_idx = i;
+        }
+    }
+    min_idx
+}
+
+fn idamin(x: &[f64]) -> usize {
+    let mut min_idx = 0;
+    for i in 1..x.len() {
+        if x[i].abs() < x[min_idx].abs() {
+            min_idx = i;
+        }
+    }
+    min_idx
+}
+
+fn icamin(x: &[Complex<f32>]) -> usize {
+    let mut min_idx = 0;
+    for i in 1..x.len() {
+        if (x[i].re.abs() + x[i].im.abs()) < (x[min_idx].re.abs() + x[min_idx].im.abs()) {
+            min_idx = i;
+        }
+    }
+    min_idx
+}
+
+fn izamin(x: &[Complex<f64>]) -> usize {
+    let mut min_idx = 0;
+    for i in 1..x.len() {
+        if (x[i].re.abs() + x[i].im.abs()) < (x[min_idx].re.abs() + x[min_idx].im.abs()) {
+            min_idx = i;
+        }
+    }
+    min_idx
 }
 
 #[cfg(test)]
@@ -2222,5 +2294,239 @@ mod tests {
         let mut x: Vec<Complex<f64>> = vec![Complex::new(1.0, 0.0); 3];
         let mut y: Vec<Complex<f64>> = vec![Complex::new(1.0, 0.0); 2];
         zswap(&mut x, &mut y);
+    }
+
+    // i?amax / i?amin return the 0-based index of the first element with the
+    // largest / smallest |x_i|. For complex vectors BLAS uses |Re(x_i)| + |Im(x_i)|.
+    #[test]
+    fn test_isamax() {
+        let x: Vec<f32> = vec![1.0, -2.0, 5.0, -3.0];
+        assert_eq!(isamax(&x), 2);
+    }
+
+    #[test]
+    fn test_isamax_negative() {
+        let x: Vec<f32> = vec![1.0, -9.0, 5.0];
+        assert_eq!(isamax(&x), 1);
+    }
+
+    #[test]
+    fn test_isamax_tie_returns_first() {
+        let x: Vec<f32> = vec![3.0, -7.0, 7.0, 2.0];
+        assert_eq!(isamax(&x), 1);
+    }
+
+    #[test]
+    fn test_isamax_single() {
+        let x: Vec<f32> = vec![42.0];
+        assert_eq!(isamax(&x), 0);
+    }
+
+    #[test]
+    fn test_idamax() {
+        let x: Vec<f64> = vec![1.0, -2.0, 5.0, -3.0];
+        assert_eq!(idamax(&x), 2);
+    }
+
+    #[test]
+    fn test_idamax_negative() {
+        let x: Vec<f64> = vec![1.0, -9.0, 5.0];
+        assert_eq!(idamax(&x), 1);
+    }
+
+    #[test]
+    fn test_idamax_tie_returns_first() {
+        let x: Vec<f64> = vec![3.0, -7.0, 7.0, 2.0];
+        assert_eq!(idamax(&x), 1);
+    }
+
+    #[test]
+    fn test_idamax_single() {
+        let x: Vec<f64> = vec![42.0];
+        assert_eq!(idamax(&x), 0);
+    }
+
+    #[test]
+    fn test_isamin() {
+        let x: Vec<f32> = vec![4.0, -2.0, 0.5, -3.0];
+        assert_eq!(isamin(&x), 2);
+    }
+
+    #[test]
+    fn test_isamin_negative() {
+        let x: Vec<f32> = vec![4.0, -0.25, 1.0];
+        assert_eq!(isamin(&x), 1);
+    }
+
+    #[test]
+    fn test_isamin_tie_returns_first() {
+        let x: Vec<f32> = vec![3.0, -1.0, 1.0, 2.0];
+        assert_eq!(isamin(&x), 1);
+    }
+
+    #[test]
+    fn test_isamin_single() {
+        let x: Vec<f32> = vec![42.0];
+        assert_eq!(isamin(&x), 0);
+    }
+
+    #[test]
+    fn test_idamin() {
+        let x: Vec<f64> = vec![4.0, -2.0, 0.5, -3.0];
+        assert_eq!(idamin(&x), 2);
+    }
+
+    #[test]
+    fn test_idamin_negative() {
+        let x: Vec<f64> = vec![4.0, -0.25, 1.0];
+        assert_eq!(idamin(&x), 1);
+    }
+
+    #[test]
+    fn test_idamin_tie_returns_first() {
+        let x: Vec<f64> = vec![3.0, -1.0, 1.0, 2.0];
+        assert_eq!(idamin(&x), 1);
+    }
+
+    #[test]
+    fn test_idamin_single() {
+        let x: Vec<f64> = vec![42.0];
+        assert_eq!(idamin(&x), 0);
+    }
+
+    #[test]
+    fn test_icamax() {
+        let x: Vec<Complex<f32>> = vec![
+            Complex::new(1.0, 1.0),
+            Complex::new(-2.0, 3.0),
+            Complex::new(0.0, -4.0),
+            Complex::new(1.0, 0.5),
+        ];
+        assert_eq!(icamax(&x), 1);
+    }
+
+    #[test]
+    fn test_icamax_uses_abs_sum_not_modulus() {
+        // |re| + |im|: 6 vs 5, modulus: 4.24 vs 5
+        let x: Vec<Complex<f32>> = vec![Complex::new(3.0, 3.0), Complex::new(0.0, 5.0)];
+        assert_eq!(icamax(&x), 0);
+    }
+
+    #[test]
+    fn test_icamax_tie_returns_first() {
+        let x: Vec<Complex<f32>> = vec![
+            Complex::new(1.0, 2.0),
+            Complex::new(-3.0, 0.0),
+            Complex::new(0.0, -3.0),
+        ];
+        assert_eq!(icamax(&x), 0);
+    }
+
+    #[test]
+    fn test_icamax_single() {
+        let x: Vec<Complex<f32>> = vec![Complex::new(-1.0, 2.0)];
+        assert_eq!(icamax(&x), 0);
+    }
+
+    #[test]
+    fn test_izamax() {
+        let x: Vec<Complex<f64>> = vec![
+            Complex::new(1.0, 1.0),
+            Complex::new(-2.0, 3.0),
+            Complex::new(0.0, -4.0),
+            Complex::new(1.0, 0.5),
+        ];
+        assert_eq!(izamax(&x), 1);
+    }
+
+    #[test]
+    fn test_izamax_uses_abs_sum_not_modulus() {
+        // |re| + |im|: 6 vs 5, modulus: 4.24 vs 5
+        let x: Vec<Complex<f64>> = vec![Complex::new(3.0, 3.0), Complex::new(0.0, 5.0)];
+        assert_eq!(izamax(&x), 0);
+    }
+
+    #[test]
+    fn test_izamax_tie_returns_first() {
+        let x: Vec<Complex<f64>> = vec![
+            Complex::new(1.0, 2.0),
+            Complex::new(-3.0, 0.0),
+            Complex::new(0.0, -3.0),
+        ];
+        assert_eq!(izamax(&x), 0);
+    }
+
+    #[test]
+    fn test_izamax_single() {
+        let x: Vec<Complex<f64>> = vec![Complex::new(-1.0, 2.0)];
+        assert_eq!(izamax(&x), 0);
+    }
+
+    #[test]
+    fn test_icamin() {
+        let x: Vec<Complex<f32>> = vec![
+            Complex::new(1.0, 1.0),
+            Complex::new(-2.0, 3.0),
+            Complex::new(0.0, -0.5),
+            Complex::new(1.0, 0.5),
+        ];
+        assert_eq!(icamin(&x), 2);
+    }
+
+    #[test]
+    fn test_icamin_uses_abs_sum_not_modulus() {
+        // |re| + |im|: 6 vs 5, modulus: 4.24 vs 5
+        let x: Vec<Complex<f32>> = vec![Complex::new(3.0, 3.0), Complex::new(0.0, 5.0)];
+        assert_eq!(icamin(&x), 1);
+    }
+
+    #[test]
+    fn test_icamin_tie_returns_first() {
+        let x: Vec<Complex<f32>> = vec![
+            Complex::new(4.0, 0.0),
+            Complex::new(1.0, -2.0),
+            Complex::new(0.0, 3.0),
+        ];
+        assert_eq!(icamin(&x), 1);
+    }
+
+    #[test]
+    fn test_icamin_single() {
+        let x: Vec<Complex<f32>> = vec![Complex::new(-1.0, 2.0)];
+        assert_eq!(icamin(&x), 0);
+    }
+
+    #[test]
+    fn test_izamin() {
+        let x: Vec<Complex<f64>> = vec![
+            Complex::new(1.0, 1.0),
+            Complex::new(-2.0, 3.0),
+            Complex::new(0.0, -0.5),
+            Complex::new(1.0, 0.5),
+        ];
+        assert_eq!(izamin(&x), 2);
+    }
+
+    #[test]
+    fn test_izamin_uses_abs_sum_not_modulus() {
+        // |re| + |im|: 6 vs 5, modulus: 4.24 vs 5
+        let x: Vec<Complex<f64>> = vec![Complex::new(3.0, 3.0), Complex::new(0.0, 5.0)];
+        assert_eq!(izamin(&x), 1);
+    }
+
+    #[test]
+    fn test_izamin_tie_returns_first() {
+        let x: Vec<Complex<f64>> = vec![
+            Complex::new(4.0, 0.0),
+            Complex::new(1.0, -2.0),
+            Complex::new(0.0, 3.0),
+        ];
+        assert_eq!(izamin(&x), 1);
+    }
+
+    #[test]
+    fn test_izamin_single() {
+        let x: Vec<Complex<f64>> = vec![Complex::new(-1.0, 2.0)];
+        assert_eq!(izamin(&x), 0);
     }
 }
