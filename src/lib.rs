@@ -136,8 +136,36 @@ fn zdotc(x: &[Complex<f64>], y: &[Complex<f64>]) -> Complex<f64> {
     s
 }
 
-fn nrm2() {
-    todo!()
+fn snrm2(x: &[f32]) -> f32 {
+    let mut s = 0.0f32;
+    for xi in x {
+        s += xi * xi;
+    }
+    s.sqrt()
+}
+
+fn dnrm2(x: &[f64]) -> f64 {
+    let mut s = 0.0f64;
+    for xi in x {
+        s += xi * xi;
+    }
+    s.sqrt()
+}
+
+fn scnrm2(x: &[Complex<f32>]) -> f32 {
+    let mut s = 0.0f32;
+    for xi in x {
+        s += xi.norm_sqr();
+    }
+    s.sqrt()
+}
+
+fn dznrm2(x: &[Complex<f64>]) -> f64 {
+    let mut s = 0.0f64;
+    for xi in x {
+        s += xi.norm_sqr();
+    }
+    s.sqrt()
 }
 
 fn rot() {
@@ -619,5 +647,66 @@ mod tests {
         let x: Vec<Complex<f64>> = vec![Complex::new(1.0, 0.0); 3];
         let y: Vec<Complex<f64>> = vec![Complex::new(1.0, 0.0); 2];
         zdotc(&x, &y);
+    }
+
+    #[test]
+    fn test_snrm2() {
+        let x: Vec<f32> = vec![3.0, -4.0, 0.0, 12.0];
+        assert_eq!(snrm2(&x), 13.0);
+    }
+
+    #[test]
+    fn test_snrm2_single_negative() {
+        let x: Vec<f32> = vec![-7.0];
+        assert_eq!(snrm2(&x), 7.0);
+    }
+
+    #[test]
+    fn test_snrm2_empty() {
+        let x: Vec<f32> = vec![];
+        assert_eq!(snrm2(&x), 0.0);
+    }
+
+    #[test]
+    fn test_dnrm2() {
+        let x: Vec<f64> = vec![3.0, -4.0, 0.0, 12.0];
+        assert_eq!(dnrm2(&x), 13.0);
+    }
+
+    #[test]
+    fn test_dnrm2_single_negative() {
+        let x: Vec<f64> = vec![-7.0];
+        assert_eq!(dnrm2(&x), 7.0);
+    }
+
+    #[test]
+    fn test_dnrm2_empty() {
+        let x: Vec<f64> = vec![];
+        assert_eq!(dnrm2(&x), 0.0);
+    }
+
+    // BLAS defines scnrm2/dznrm2 as sqrt(sum(|x_i|^2)), a real number.
+    #[test]
+    fn test_scnrm2() {
+        let x: Vec<Complex<f32>> = vec![Complex::new(3.0, 4.0), Complex::new(0.0, -12.0)];
+        assert_eq!(scnrm2(&x), 13.0);
+    }
+
+    #[test]
+    fn test_scnrm2_empty() {
+        let x: Vec<Complex<f32>> = vec![];
+        assert_eq!(scnrm2(&x), 0.0);
+    }
+
+    #[test]
+    fn test_dznrm2() {
+        let x: Vec<Complex<f64>> = vec![Complex::new(3.0, 4.0), Complex::new(0.0, -12.0)];
+        assert_eq!(dznrm2(&x), 13.0);
+    }
+
+    #[test]
+    fn test_dznrm2_empty() {
+        let x: Vec<Complex<f64>> = vec![];
+        assert_eq!(dznrm2(&x), 0.0);
     }
 }
