@@ -11,3 +11,4 @@ name = "rblas1"
 crate-type = ["rlib", "staticlib", "cdylib"]
 
 [dependencies]
+complex = { path = "../complex" }

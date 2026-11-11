@@ -1,8 +1,6 @@
 #![forbid(unsafe_code)]
 
-use crate::complex::Complex;
-
-mod complex;
+pub use complex::Complex;
 
 pub fn sasum(x: &[f32]) -> f32 {
     let mut s = 0.0f32;
