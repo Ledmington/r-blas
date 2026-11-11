@@ -1,0 +1,13 @@
+[package]
+name = "blas2"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "rblas2"
+# rlib: used by other Rust crates in this workspace
+# staticlib: librblas2.a
+# cdylib: librblas2.so
+crate-type = ["rlib", "staticlib", "cdylib"]
+
+[dependencies]
